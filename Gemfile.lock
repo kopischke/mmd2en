@@ -1,0 +1,14 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.0.8)
+    minitest-stub-const (0.1)
+    rake (10.1.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  minitest (~> 5.0)
+  minitest-stub-const (~> 0.1)
+  rake (~> 10.0)
