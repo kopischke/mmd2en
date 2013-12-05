@@ -1,14 +1,18 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    CFPropertyList (2.2.4)
     minitest (5.0.8)
     minitest-stub-const (0.1)
     rake (10.1.0)
+    version (1.0.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  CFPropertyList (~> 2.2)
   minitest (~> 5.0)
   minitest-stub-const (~> 0.1)
   rake (~> 10.0)
+  version (~> 1.0)
