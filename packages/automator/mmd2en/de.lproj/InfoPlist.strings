@@ -1,0 +1,32 @@
+/* Localized versions of Info.plist keys */
+
+/*  AMApplication localized strings  */
+/* e.g. "Terminal" = "Terminal"; */
+
+/*  AMCategory localized strings  */
+/* e.g. "Terminal" = "Terminal"; */
+
+AMName = "MultiMarkdown nach Evernote";
+
+/* AMDefaultParameters localized values */
+/* e.g. myDefaultIntegerParameter = 0; */
+/* e.g. myDefaultStringParameter = "Default String Value"; */
+
+/* AMDescription localized strings */
+AMDAlert = "";
+AMDInput = "MultiMarkdown-formatierter Text und Metadaten im einem der folgenden Formate: MultiMarkdown, YAML Frontmatter, MD2EN Legacy.";
+AMDNote = "";
+AMDOptions = "Pfad zum `multimarkdown`-Kommando , dass verwendet werden soll (wenn die Vorgabe nicht passt, sollte die Ausgabe von `which -a multimarkdown` überprüft werden).";
+AMDResult = "Keine.";
+AMDRequires = "System-Ruby Version 2 (Standard mit OS X 10.9), MultiMarkdown Version 4 (4.3 oder höher empfohlen).";
+AMDSummary = "Bei dieser Aktion wird eine Evernote-Notiz mit Inhalt und Metadaten entsprechend dem übergebenem MultiMarkdown-Text erzeugt.";
+AMDWebsite = "https://github.com/kopischke/mmd2en";
+
+/* AMKeyword localized strings */
+/* e.g. "Filter" = "Filter"; */
+
+/* AMWarning localized strings */
+ApplyButton = "(* Button label for user to add proposed Action, e.g. Add. *)";
+IgnoreButton = "(* Button label for user not to add proposed Action, e.g. Don't Add. *)";
+Message = "(* Warning message presented to user goes here. *)";
+

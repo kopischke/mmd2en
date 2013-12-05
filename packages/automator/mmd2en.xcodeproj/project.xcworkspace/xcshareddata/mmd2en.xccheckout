@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>3973A20A-BCD7-4BE3-9DD1-730EB62CB8E5</string>
+	<key>IDESourceControlProjectName</key>
+	<string>mmd2en</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>293FA238-1D04-4E07-BFAE-860206D881C5</key>
+		<string>https://github.com/kopischke/mmd2en.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>packages/automator/mmd2en/mmd2en.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>293FA238-1D04-4E07-BFAE-860206D881C5</key>
+		<string>../../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/kopischke/mmd2en.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>293FA238-1D04-4E07-BFAE-860206D881C5</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>293FA238-1D04-4E07-BFAE-860206D881C5</string>
+			<key>IDESourceControlWCCName</key>
+			<string>mmd2en</string>
+		</dict>
+	</array>
+</dict>
+</plist>
