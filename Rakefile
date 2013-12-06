@@ -1,5 +1,5 @@
 # encoding: UTF-8
-$:.push File.dirname(File.join(__FILE__, 'ext'))
+$:.push File.join(File.dirname(__FILE__), 'ext')
 
 require 'bundler/setup'
 require 'CFPropertyList'
