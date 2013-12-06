@@ -1,5 +1,5 @@
 # encoding: UTF-8
-$:.push File.dirname(__FILE__)
+$:.push File.dirname(File.join(__FILE__, 'ext'))
 
 require 'bundler/setup'
 require 'CFPropertyList'
@@ -9,14 +9,7 @@ require 'rake/testtask'
 require 'rake/version_task'
 require 'shellwords'
 require 'version'
-
-class Version
-  def to_friendly
-    names = {'a' => 'alpha', 'b' => 'beta', 'rc' => 'release candidate'}
-    match = String(self).match(/^(.+)(#{names.keys.join('|')})([[:digit:]]+)?$/i)
-    match ? "#{match[1]} #{names[match[2]]} #{match[3]}" : self
-  end
-end
+require 'version/semantics'
 
 def version
   Version.current
