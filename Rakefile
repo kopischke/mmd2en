@@ -42,6 +42,8 @@ APP_TEMPLATE  = File.join(PACKAGE_DIR, 'service', "#{BASE_NAME}.platypus")
 APP_BUNDLE    = File.join(BUILD_DIR, "#{FULL_NAME}.app")
 ACTION_BUNDLE = File.join(BUILD_DIR, "#{BASE_NAME}.action")
 
+PACKAGES      = [APP_BUNDLE, ACTION_BUNDLE]
+
 # rake clean
 CLEAN.include(APP_TEMPLATE)
 
@@ -120,11 +122,11 @@ end
 
 
 desc 'Build all packages.'
-task :build => [:clobber, :automator, :service]
+task :build => [:clobber, *PACKAGES]
 
 # rake package (because PackageTask’s logic is painful and its zip configuration sucks)
 desc 'Zip all packages for upload to GitHub.'
-task :package => [ACTION_BUNDLE, APP_BUNDLE] do |task|
+task :package => PACKAGES do |task|
   zip_name    = "#{BASE_NAME}-packages-#{version}"
   excludes    = ['.DS_Store']
   zip_command = [
