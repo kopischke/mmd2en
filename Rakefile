@@ -107,7 +107,6 @@ file APP_BUNDLE => [APP_TEMPLATE, BUILD_DIR] do |task|
   app_info = {
     'CFBundleVersion'            => version.to_s,                 # Sync version numbers
     'CFBundleShortVersionString' => version.to_friendly,          # Sync version numbers
-    'LSBackgroundOnly'           => true,                         # Faceless background application
     'LSMinimumSystemVersion'     => '10.9.0'                      # Minimum for system Ruby 2
   }
   plist_merge!(File.join(APP_BUNDLE, 'Contents', 'Info.plist'), app_info)
