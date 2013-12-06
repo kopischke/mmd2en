@@ -4,6 +4,7 @@ GEM
     CFPropertyList (2.2.4)
     minitest (5.0.8)
     minitest-stub-const (0.1)
+    mustache (0.99.5)
     rake (10.1.0)
     version (1.0.0)
 
@@ -14,5 +15,6 @@ DEPENDENCIES
   CFPropertyList (~> 2.2)
   minitest (~> 5.0)
   minitest-stub-const (~> 0.1)
+  mustache (~> 0.99.5)
   rake (~> 10.0)
   version (~> 1.0)

@@ -1,7 +1,10 @@
 # encoding: UTF-8
+$:.push File.dirname(__FILE__)
+
 require 'bundler/setup'
 require 'CFPropertyList'
 require 'rake/clean'
+require 'rake/mustache_task'
 require 'rake/testtask'
 require 'rake/version_task'
 require 'shellwords'
@@ -27,12 +30,17 @@ def plist_merge!(plist_file, data)
   plist.save(plist_file, CFPropertyList::List::FORMAT_BINARY)
 end
 
-BASE_NAME   = 'mmd2en'
-MAIN_SCRIPT = "#{BASE_NAME}.rb"
+BASE_NAME    = 'mmd2en'
 
-RAKE_DIR    = File.join(File.dirname(__FILE__))
-BUILD_DIR   = File.join(RAKE_DIR, 'build')
-PACKAGE_DIR = File.join(RAKE_DIR, 'packages')
+BASE_DIR     = File.join(File.dirname(__FILE__))
+BUILD_DIR    = File.join(BASE_DIR, 'build')
+PACKAGE_DIR  = File.join(BASE_DIR, 'packages')
+
+MAIN_SCRIPT  = "#{BASE_NAME}.rb"
+APP_TEMPLATE = File.join(PACKAGE_DIR, 'service', "#{BASE_NAME}.platypus")
+
+# rake clean
+CLEAN.include(APP_TEMPLATE)
 
 # rake clobber
 CLOBBER.include(File.join(BUILD_DIR, '*'))
@@ -77,17 +85,23 @@ task :automator do
   plist_merge!(File.join(BUILD_DIR, "#{scheme}.action", 'Contents', 'Info.plist'), app_info)
 end
 
+# rake mustache + file task for APP_TEMPLATE
+Rake::MustacheTask.new(APP_TEMPLATE) do |task|
+  task.verbose  = true
+  task.template = "#{task.target}.mustache"
+  task.data     = { base_dir: File.expand_path(BASE_DIR), base_name: BASE_NAME }
+end
+
 # rake service
 desc 'Generate OS X Service provider application.'
-task :service do
+task :service => APP_TEMPLATE do
   base_dir = File.join(PACKAGE_DIR, 'service')
-  template = File.join(base_dir, "#{BASE_NAME}.platypus")
   app_name = 'MultiMarkdown → Evernote'
-  target = File.join(BUILD_DIR, "#{app_name}.app")
+  target   = File.join(BUILD_DIR, "#{app_name}.app")
 
   # Generate App bundle
   FileUtils.rm_r(target) if File.exist?(target) # Platypus’ overwrite flag `-y` is a noop as of 4.8
-  %x{/usr/local/bin/platypus -l -I net.kopischke.#{BASE_NAME} -P #{template.shellescape} #{target.shellescape}}
+  %x{/usr/local/bin/platypus -l -I net.kopischke.#{BASE_NAME} -P #{APP_TEMPLATE.shellescape} #{target.shellescape}}
   fail "Generation of '#{target}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
 
   # Post process Info.plist: set info not set by Platypus
@@ -101,4 +115,4 @@ task :service do
 end
 
 desc 'Build all packages.'
-task :build => [:automator, :service]
+task :build => [:clobber, :automator, :service]
