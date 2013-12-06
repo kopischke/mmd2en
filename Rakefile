@@ -116,3 +116,6 @@ end
 
 desc 'Build all packages.'
 task :build => [:clobber, :automator, :service]
+
+desc 'Test and build.'
+task :default => [:test, :build]
