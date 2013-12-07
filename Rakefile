@@ -85,12 +85,15 @@ end
 Rake::MustacheTask.new(APP_TEMPLATE) do |task|
   task.verbose  = true
   task.template = "#{task.target}.mustache"
-  task.data     = { base_dir: File.expand_path(BASE_DIR), base_name: BASE_NAME }
+  task.data     = {
+    base_dir:  File.expand_path(BASE_DIR),
+    base_name: BASE_NAME
+  }
 end
 
-# rake service
+# rake app
 desc 'Generate OS X Service provider application.'
-task :service => APP_BUNDLE
+task :app => APP_BUNDLE
 
 file APP_BUNDLE => [APP_TEMPLATE, BUILD_DIR] do |task|
   FileUtils.rm_r(APP_BUNDLE) if File.exist?(APP_BUNDLE) # Platypus’ overwrite flag `-y` is a noop as of 4.8
@@ -121,6 +124,7 @@ file APP_BUNDLE => [APP_TEMPLATE, BUILD_DIR] do |task|
   info_plist.write!
 end
 
+# rake build
 desc 'Build all packages.'
 task :build => [:clobber, *PACKAGES]
 
