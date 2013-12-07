@@ -2,7 +2,7 @@
 $:.push File.join(File.dirname(__FILE__), 'ext')
 
 require 'bundler/setup'
-require 'CFPropertyList'
+require 'info_plist'
 require 'rake/clean'
 require 'rake/mustache_task'
 require 'rake/testtask'
@@ -13,14 +13,6 @@ require 'version/semantics'
 
 def version
   Version.current
-end
-
-def plist_merge!(plist_file, data)
-  plist       = CFPropertyList::List.new(file: plist_file)
-  plist_data  = CFPropertyList.native_types(plist.value)
-  plist_data.merge!(data)
-  plist.value = CFPropertyList.guess(plist_data, convert_unknown_to_string: true)
-  plist.save(plist_file, CFPropertyList::List::FORMAT_BINARY)
 end
 
 BASE_NAME     = 'mmd2en'
@@ -84,7 +76,9 @@ file ACTION_BUNDLE => BUILD_DIR do |task|
     'CFBundleVersion'            => version.to_s,       # Sync version numbers
     'CFBundleShortVersionString' => version.to_friendly # Sync version numbers
   }
-  plist_merge!(File.join(ACTION_BUNDLE, 'Contents', 'Info.plist'), app_info)
+  info_plist = InfoPList.new(ACTION_BUNDLE)
+  info_plist.data.merge!(app_info)
+  info_plist.write!
 end
 
 # rake mustache + file task for APP_TEMPLATE
@@ -104,14 +98,28 @@ file APP_BUNDLE => [APP_TEMPLATE, BUILD_DIR] do |task|
   fail "Generation of '#{APP_BUNDLE}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
 
   # Post process Info.plist: set info not set by Platypus
+  doc_types = [{ # handle plain text as a pure drop target
+    'CFBundleTypeName'   => 'NSStringPboardType',
+    'LSItemContentTypes' => ['public.plain-text'],
+    'CFBundleTypeRole'   => 'Viewer',
+    'LSHandlerRank'      => 'None'
+  }]
   app_info = {
-    'CFBundleVersion'            => version.to_s,                 # Sync version numbers
-    'CFBundleShortVersionString' => version.to_friendly,          # Sync version numbers
-    'LSMinimumSystemVersion'     => '10.9.0'                      # Minimum for system Ruby 2
+    'CFBundleDocumentTypes'      => doc_types,           # override handled file types
+    'CFBundleVersion'            => version.to_s,        # sync version numbers
+    'CFBundleShortVersionString' => version.to_friendly, # sync version numbers
+    'LSMinimumSystemVersion'     => '10.9.0'             # minimum for system Ruby 2
   }
-  plist_merge!(File.join(APP_BUNDLE, 'Contents', 'Info.plist'), app_info)
+  ns_services = {
+    'NSRequiredContext' => {'NSServiceCategory' => 'public.text'},
+    'NSSendFileTypes'   => ['public.plain-text'],        # only accept these files
+    'NSSendTypes'       => ['NSStringPboardType']        # and text input
+  }
+  info_plist = InfoPList.new(APP_BUNDLE)
+  info_plist.data.merge!(app_info)
+  info_plist.data['NSServices'][0].merge!(ns_services)
+  info_plist.write!
 end
-
 
 desc 'Build all packages.'
 task :build => [:clobber, *PACKAGES]
