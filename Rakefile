@@ -10,6 +10,7 @@ require 'rake/version_task'
 require 'shellwords'
 require 'version'
 require 'version/semantics'
+require 'yaml'
 
 def version
   Version.current
@@ -96,32 +97,48 @@ desc 'Generate OS X Service provider application.'
 task :app => APP_BUNDLE
 
 file APP_BUNDLE => [APP_TEMPLATE, BUILD_DIR] do |task|
-  FileUtils.rm_r(APP_BUNDLE) if File.exist?(APP_BUNDLE) # Platypus’ overwrite flag `-y` is a noop as of 4.8
+  lsregister = '/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister'
+
+  if File.exist?(APP_BUNDLE) # Platypus’ overwrite flag `-y` is a noop as of 4.8
+    puts 'Deleting previous app bundle...'
+    %x{#{lsregister} -u #{APP_BUNDLE.shellescape}}
+    FileUtils.rm_r(APP_BUNDLE)
+  end
+
   %x{/usr/local/bin/platypus -l -I net.kopischke.#{BASE_NAME} -P #{APP_TEMPLATE.shellescape} #{APP_BUNDLE.shellescape}}
   fail "Generation of '#{APP_BUNDLE}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
 
   # Post process Info.plist: set info not set by Platypus
-  doc_types = [{ # handle plain text as a pure drop target
-    'CFBundleTypeName'   => 'NSStringPboardType',
-    'LSItemContentTypes' => ['public.plain-text'],
-    'CFBundleTypeRole'   => 'Viewer',
-    'LSHandlerRank'      => 'None'
-  }]
-  app_info = {
-    'CFBundleDocumentTypes'      => doc_types,           # override handled file types
+  uti_defs = YAML.load_file(File.join(File.dirname(APP_TEMPLATE), "#{BASE_NAME}.utis.yaml"))
+  supported_types = uti_defs.values
+  supported_utis  = supported_types.map {|e| e['UTTypeIdentifier'] }
+
+  doc_type       = { # declare MutiMarkdown compatible document handling
+    'LSItemContentTypes'     => supported_utis,
+    'CFBundleTypeRole'       => 'Viewer',
+    'LSHandlerRank'          => 'None'
+  }
+  ns_services    = { # declare as Text service accepting compatible files
+    'NSRequiredContext'      => {'NSServiceCategory' => 'public.text'},
+    'NSSendFileTypes'        => supported_utis,
+    'NSSendTypes'            => ['NSStringPboardType']
+  }
+  app_info       = { # Info.plist root
+    'CFBundleDocumentTypes'      => [doc_type],          # override handled file types
+    'UTImportedTypeDeclarations' => supported_types,     # import supported UTIs
     'CFBundleVersion'            => version.to_s,        # sync version numbers
     'CFBundleShortVersionString' => version.to_friendly, # sync version numbers
     'LSMinimumSystemVersion'     => '10.9.0'             # minimum for system Ruby 2
   }
-  ns_services = {
-    'NSRequiredContext' => {'NSServiceCategory' => 'public.text'},
-    'NSSendFileTypes'   => ['public.plain-text'],        # only accept these files
-    'NSSendTypes'       => ['NSStringPboardType']        # and text input
-  }
+
+  puts 'Rewriting Info.plist...'
   info_plist = InfoPList.new(APP_BUNDLE)
   info_plist.data.merge!(app_info)
   info_plist.data['NSServices'][0].merge!(ns_services)
   info_plist.write!
+
+  puts 'Registering app with launch Services...'
+  %x{#{lsregister} -f #{APP_BUNDLE.shellescape}}
 end
 
 # rake build

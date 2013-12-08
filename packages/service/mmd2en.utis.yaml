@@ -1,0 +1,51 @@
+---
+:markdown:
+  UTTypeDescription: Markdown document
+  UTTypeIdentifier: net.daringfireball.markdown
+  UTTypeTagSpecification:
+    public.filename-extension:
+    - markdown
+    - markdn
+    - markd
+    - mdown
+    - mkdn
+    - md
+  UTTypeConformsTo:
+  - public.item
+  - public.plain-text
+  UTTypeReferenceURL: http://daringfireball.net/projects/markdown/
+
+:multimarkdown:
+  UTTypeDescription: MultiMarkdown document
+  UTTypeIdentifier: net.fletcherpenney.multimarkdown
+  UTTypeTagSpecification:
+    public.filename-extension:
+    - multimarkdown
+    - mmd
+  UTTypeConformsTo:
+  - public.item
+  - public.plain-text
+  UTTypeReferenceURL: http://fletcherpenney.net/multimarkdown/
+
+:fountain:
+  UTTypeDescription: Fountain document
+  UTTypeIdentifier: io.fountain.fountain
+  UTTypeTagSpecification:
+    public.filename-extension:
+    - spmd
+    - fountain
+  UTTypeConformsTo:
+  - public.item
+  - public.plain-text
+  UTTypeReferenceURL: http://fountain.io/
+
+:ronn:
+  UTTypeDescription: Ronn document
+  UTTypeIdentifier: com.tomayko.ronn
+  UTTypeTagSpecification:
+    public.filename-extension:
+    - ronn
+  UTTypeConformsTo:
+  - public.item
+  - public.plain-text
+  UTTypeReferenceURL: http://rtomayko.github.io/ronn/
