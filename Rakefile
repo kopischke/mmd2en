@@ -147,9 +147,9 @@ end
 desc 'Build all packages.'
 task :build => [:clobber, *PACKAGES]
 
-# rake package (because PackageTask’s logic is painful and its zip configuration sucks)
+# rake zip (because PackageTask’s logic is painful and its zip configuration sucks)
 desc 'Zip all packages for upload to GitHub.'
-task :package => PACKAGES do |task|
+task :zip => PACKAGES do |task|
   zip_name    = "#{BASE_NAME}-packages-#{version}"
   excludes    = ['.DS_Store']
   zip_command = [
