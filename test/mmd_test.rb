@@ -13,7 +13,7 @@ class MockShellRunner < Minitest::Mock
   def initialize(all_bin_paths, use_bin, use_version = nil)
     super()
     expect :new, self
-    expect :run_command, all_bin_paths.join($/), ['which', '-a', 'multimarkdown']
+    expect :run_command, all_bin_paths.join($/), ['bash', '-lc', 'which -a multimarkdown']
     version_info = use_version ? "MultiMarkdown version #{use_version}" : ''
     expect :run_command, version_info, [use_bin, '-v']
   end
@@ -63,7 +63,7 @@ class TestMultiMarkdownParser < Minitest::Test
   def test_new_raises_error_if_no_executable_mmd_is_found
     runner = Minitest::Mock.new
     runner.expect :new, runner
-    runner.expect :run_command, '', ['which', '-a', 'multimarkdown']
+    runner.expect :run_command, '', ['bash', '-lc', 'which -a multimarkdown']
 
     MultiMarkdownParser.stub_const(:ShellRunner, runner) do
       assert_raises(RuntimeError) { MultiMarkdownParser.new }

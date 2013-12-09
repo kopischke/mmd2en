@@ -22,10 +22,7 @@
 	<key>AMCategory</key>
 	<string>AMCategoryText</string>
 	<key>AMDefaultParameters</key>
-	<dict>
-		<key>MULTIMARKDOWN</key>
-		<string>/usr/local/bin/multimarkdown</string>
-	</dict>
+	<dict/>
 	<key>AMDescription</key>
 	<dict>
 		<key>AMDAlert</key>

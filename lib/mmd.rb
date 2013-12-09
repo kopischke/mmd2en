@@ -14,7 +14,7 @@ class MultiMarkdownParser
 
   def initialize
     @sh      = ShellRunner.new
-    mmds     = @sh.run_command('which', '-a', 'multimarkdown').split($/)
+    mmds     = @sh.run_command('bash', '-lc', 'which -a multimarkdown').split($/)
     mmds     = [File.expand_path(ENV['MULTIMARKDOWN'])] | mmds unless String(ENV['MULTIMARKDOWN']).strip.empty?
     runnable = mmds.find {|mmd| File.executable?(mmd) }
     runnable or fail 'No MultiMarkdown processor found: install MMD into your PATH, or export $MULTIMARKDOWN to point to it.'

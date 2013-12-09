@@ -33,7 +33,7 @@ For the conversion to work, you need:
 
 ### Automator ###
 
-An **Automator action** for processing text input in workflows is also included, but it is not required for using the services. Note that, as Automator actions only have access to a minimal `$PATH`, you will have to set the path to your `multimarkdown` executable in the Action options, unless it is located at `/usr/local/bin/multimarkdown` (the default).
+An **Automator action** for processing text input in workflows is also included, but it is not required for using the services. If your `multimarkdown` executable is not in your `$PATH`, you will have to set its path in the Action options.
 
 [brew-home]:         http://brew.sh
 [evernote-osx]:      http://evernote.com/download/get.php?file=EvernoteMac
