@@ -4,17 +4,17 @@ In beta – documentation not done yet. The following applies to the downloadabl
 
 ## Package contents (as of Beta 3) ##
 
-The package’s main component is **MultiMarkdown → Evernote**, an application that provides a service to create Evernote notes both from selected text and from Markdown files. The services should create a note of the converted MultiMarkdown content and set note metadata to match metadata in the source (i.e. if you have a *url* metadata field, the URL of the note will be set to that). Currently, settable metadata is:
+The package’s main component is **MultiMarkdown → Evernote**, an application that provides a service to create Evernote notes both from selected text and from Markdown files. The services should create a note of the converted MultiMarkdown content and set note metadata to match metadata in the source (i.e. if you have a *url* metadata field, the source URL of the created Evernote note will be set to that). Currently, settable metadata is:
 
-1. title (falling back to the first level 1 heading)
-2. notebook (created if absent)
-3. tags (created if absent)
+1. title (falling back to the first level 1 heading, then to the current date if no other title is found)
+2. notebook (created if not known to Evernote yet)
+3. tags (created if not know to Evernote yet)
 4. source URL
 5. source date (not exposed in Evernote’s UI)
 6. due date for reminder
-7. attached files (yes, you read that right)
+7. attached files (yes, you read that right: you can attach files by passing their path as metadata)
 
-Metadata can be in [MultiMarkdown metadata format][mmd-metadata] or in [YAML frontmatter][yaml-fm] format (the legacy codes from the old Markdown to Evernote script are also supported).
+Metadata can be in [MultiMarkdown metadata format][mmd-metadata] or in [YAML frontmatter][yaml-fm] format (the legacy codes from the [old Markdown to Evernote script][md2en] are also supported).
 
 ### Requirements ###
 
@@ -33,11 +33,12 @@ For the conversion to work, you need:
 
 ### Automator ###
 
-An **Automator action** for processing text input in workflows is also included, but it is not required for using the services. If your `multimarkdown` executable is not in your `$PATH`, you will have to set its path in the Action options.
+An **Automator action** for processing text input in workflows is also included, but it is not required for using the services. Note that, as Automator actions only have access to a minimal `$PATH`, you will have to set the path to your `multimarkdown` executable in the Action options, unless it is located at `/usr/local/bin/multimarkdown` (the default).
 
 [brew-home]:         http://brew.sh
 [evernote-osx]:      http://evernote.com/download/get.php?file=EvernoteMac
 [fountain-home]:     http://fountain.io/
+[md2en]:             http://nsuserview.kopischke.net/post/6223792409/i-can-has-some-markdown
 [mmd-home]:          http://fletcherpenney.net/multimarkdown/
 [mmd-metadata]:      http://fletcher.github.com/peg-multimarkdown/mmd-manual.pdf
 [platypus-home]:     http://sveinbjorn.org/platypus
