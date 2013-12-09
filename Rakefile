@@ -82,8 +82,10 @@ file ACTION_BUNDLE => BUILD_DIR do |task|
   info_plist.write!
 end
 
-# rake mustache + file task for APP_TEMPLATE
-Rake::MustacheTask.new(APP_TEMPLATE) do |task|
+# file task for APP_TEMPLATE
+Rake::MustacheTask.new do |task|
+  task.target   = APP_TEMPLATE
+  task.named    = {platypus: 'Generate Platypus template for OS X Service provider application'}
   task.verbose  = true
   task.template = "#{task.target}.mustache"
   task.data     = {
