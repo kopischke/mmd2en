@@ -23,10 +23,17 @@ BASE_DIR      = File.join(File.expand_path(File.dirname(__FILE__)))
 BUILD_DIR     = File.join(BASE_DIR, 'build')
 PACKAGE_DIR   = File.join(BASE_DIR, 'packages')
 
-MAIN_SCRIPT   = "#{BASE_NAME}.rb"
-APP_TEMPLATE  = File.join(PACKAGE_DIR, 'service', "#{BASE_NAME}.platypus")
+MAIN_SCRIPT   = File.join(BASE_DIR, "#{BASE_NAME}.rb")
+LIB_SCRIPTS   = FileList.new(File.join(BASE_DIR, 'lib', '*.rb'))
+ALL_SCRIPTS   = LIB_SCRIPTS.dup.push(MAIN_SCRIPT)
+
 APP_BUNDLE    = File.join(BUILD_DIR, "#{FULL_NAME}.app")
+APP_TEMPLATE  = File.join(PACKAGE_DIR, 'service', "#{BASE_NAME}.platypus")
+APP_SCRIPT    = File.join(PACKAGE_DIR, 'service', "#{BASE_NAME}.bash")
+APP_YAML_DATA = FileList.new(File.join(PACKAGE_DIR, 'service', "#{BASE_NAME}.*.yaml"))
+
 ACTION_BUNDLE = File.join(BUILD_DIR, "#{BASE_NAME}.action")
+ACTION_XCODE  = File.join(BUILD_DIR, "#{BASE_NAME}.xcodeproj")
 
 PACKAGES      = [APP_BUNDLE, ACTION_BUNDLE]
 
@@ -56,7 +63,7 @@ directory BUILD_DIR
 desc 'Generate Automator action.'
 task :automator => ACTION_BUNDLE
 
-file ACTION_BUNDLE => BUILD_DIR do |task|
+file ACTION_BUNDLE => [*ALL_SCRIPTS, ACTION_XCODE, BUILD_DIR] do |task|
   base_dir   = File.join(PACKAGE_DIR, 'automator')
   project    = File.join(base_dir, "#{BASE_NAME}.xcodeproj")
   cmd_file   = File.join(base_dir, BASE_NAME, 'main.command')
@@ -98,7 +105,7 @@ end
 desc 'Generate OS X Service provider application.'
 task :app => APP_BUNDLE
 
-file APP_BUNDLE => [APP_TEMPLATE, BUILD_DIR] do |task|
+file APP_BUNDLE => [*ALL_SCRIPTS, APP_TEMPLATE, APP_SCRIPT, *APP_YAML_DATA, BUILD_DIR] do |task|
   lsregister = '/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister'
 
   if File.exist?(APP_BUNDLE) # Platypus’ overwrite flag `-y` is a noop as of 4.8
