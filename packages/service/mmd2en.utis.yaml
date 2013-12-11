@@ -12,7 +12,7 @@
     - md
   UTTypeConformsTo:
   - public.item
-  - public.plain-text
+  - public.text
   UTTypeReferenceURL: http://daringfireball.net/projects/markdown/
 
 :multimarkdown:
@@ -24,7 +24,7 @@
     - mmd
   UTTypeConformsTo:
   - public.item
-  - public.plain-text
+  - public.text
   UTTypeReferenceURL: http://fletcherpenney.net/multimarkdown/
 
 :fountain:
@@ -36,7 +36,7 @@
     - fountain
   UTTypeConformsTo:
   - public.item
-  - public.plain-text
+  - public.text
   UTTypeReferenceURL: http://fountain.io/
 
 :ronn:
@@ -47,5 +47,5 @@
     - ronn
   UTTypeConformsTo:
   - public.item
-  - public.plain-text
+  - public.text
   UTTypeReferenceURL: http://rtomayko.github.io/ronn/
