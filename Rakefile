@@ -95,7 +95,9 @@ Rake::MustacheTask.new(APP_TEMPLATE) do |t|
   t.verbose    = true
   t.data       = {
     base_dir:  File.expand_path(BASE_DIR),
-    base_name: BASE_NAME
+    base_name: BASE_NAME,
+    full_name: FULL_NAME,
+    version:   version.to_s
   }
 end
 
@@ -133,7 +135,6 @@ file APP_BUNDLE => [*ALL_SCRIPTS, APP_TEMPLATE, APP_SCRIPT, *APP_YAML_DATA, BUIL
   app_info       = { # Info.plist root
     'CFBundleDocumentTypes'      => [doc_type],          # override handled file types
     'UTImportedTypeDeclarations' => supported_types,     # import supported UTIs
-    'CFBundleVersion'            => version.to_s,        # sync version numbers
     'CFBundleShortVersionString' => version.to_friendly, # sync version numbers
     'LSMinimumSystemVersion'     => '10.9.0'             # minimum for system Ruby 2
   }
