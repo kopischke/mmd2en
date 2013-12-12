@@ -7,6 +7,7 @@ require 'rake/clean'
 require 'rake/mustache_task'
 require 'rake/testtask'
 require 'rake/version_task'
+require 'rake/zip_task'
 require 'shellwords'
 require 'version'
 require 'version/semantics'
@@ -153,22 +154,11 @@ end
 desc 'Build all packages.'
 task :build => [:clobber, *PACKAGES]
 
-# rake zip (because PackageTask’s logic is painful and its zip configuration sucks)
-desc 'Zip all packages for upload to GitHub.'
-task :zip => PACKAGES do |task|
-  zip_name    = "#{BASE_NAME}-packages-#{version}"
-  excludes    = ['.DS_Store']
-  zip_command = [
-    'zip',
-    '-m', # --move => delete zipped files
-    '-r', # --recurse-paths
-    "#{zip_name.shellescape}.zip",
-    '.',  # from current dir
-    '-x', # --exclude
-    *excludes
-  ]
-  %x{cd #{BUILD_DIR.shellescape}; #{zip_command.join(' ')}}
-  fail "Error generating package archive '#{zip_name}': `zip`returned #{$?.exitstatus}" unless $?.exitstatus == 0
+# rake zip
+Rake::ZipTask.new(File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}")) do |t|
+  t.named_task = {zip: 'Zip all packages for upload to GitHub.'}
+  t.files      = PACKAGES
+  t.verbose    = true
 end
 
 desc 'Test and build.'
