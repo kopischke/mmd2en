@@ -1,18 +1,16 @@
 # encoding: UTF-8
 module Rake
-  module StandardOutput
+  module DefaultOutput
   private
     def puts(message)
-      rake_output_message message
+      rake_output_message(message)
     end
   end
 
-  module VerboseOutput
+  module ReducedOutput
   private
     def puts(message)
-      if @verbose || $VERBOSE || $DEBUG
-        rake_output_message message
-      end
+      rake_output_message(message) if (@verbose rescue false) || $VERBOSE || $DEBUG
     end
   end
 end
