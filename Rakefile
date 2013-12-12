@@ -89,13 +89,11 @@ file ACTION_BUNDLE => [*ALL_SCRIPTS, ACTION_XCODE, BUILD_DIR] do |task|
   info_plist.write!
 end
 
-# file task for APP_TEMPLATE
-Rake::MustacheTask.new do |task|
-  task.target   = APP_TEMPLATE
-  task.named    = {platypus: 'Generate Platypus template for OS X Service provider application'}
-  task.verbose  = true
-  task.template = "#{task.target}.mustache"
-  task.data     = {
+# rake platypus
+Rake::MustacheTask.new(APP_TEMPLATE) do |t|
+  t.named_task = {platypus: 'Generate Platypus template for OS X Service provider application'}
+  t.verbose    = true
+  t.data       = {
     base_dir:  File.expand_path(BASE_DIR),
     base_name: BASE_NAME
   }
