@@ -17,27 +17,40 @@ def version
   Version.current
 end
 
+
+# CONSTANTS
+# ---------
 BASE_NAME     = 'mmd2en'
 FULL_NAME     = 'MultiMarkdown → Evernote'
 
+# Build system directory structure
 BASE_DIR      = File.join(File.expand_path(File.dirname(__FILE__)))
 BUILD_DIR     = File.join(BASE_DIR, 'build')
 PACKAGE_DIR   = File.join(BASE_DIR, 'packages')
 
+# Core scripts
 MAIN_SCRIPT   = File.join(BASE_DIR, "#{BASE_NAME}.rb")
 LIB_SCRIPTS   = FileList.new(File.join(BASE_DIR, 'lib', '*.rb'))
 ALL_SCRIPTS   = LIB_SCRIPTS.dup.push(MAIN_SCRIPT)
 
+# Service provider app
 APP_BUNDLE    = File.join(BUILD_DIR, "#{FULL_NAME}.app")
-APP_TEMPLATE  = File.join(PACKAGE_DIR, 'service', "#{BASE_NAME}.platypus")
-APP_SCRIPT    = File.join(PACKAGE_DIR, 'service', "#{BASE_NAME}.bash")
-APP_YAML_DATA = FileList.new(File.join(PACKAGE_DIR, 'service', "#{BASE_NAME}.*.yaml"))
+APP_DIR       = File.join(PACKAGE_DIR, 'service')
+APP_TEMPLATE  = File.join(APP_DIR, "#{BASE_NAME}.platypus")
+APP_SCRIPT    = File.join(APP_DIR, "#{BASE_NAME}.bash")
+APP_YAML_DATA = FileList.new(File.join(APP_DIR, "#{BASE_NAME}.*.yaml"))
 
+# Automator action
 ACTION_BUNDLE = File.join(BUILD_DIR, "#{BASE_NAME}.action")
-ACTION_XCODE  = File.join(BUILD_DIR, "#{BASE_NAME}.xcodeproj")
+ACTION_DIR    = File.join(PACKAGE_DIR, 'automator')
+ACTION_XCODE  = File.join(ACTION_DIR, "#{BASE_NAME}.xcodeproj")
 
+# Package upload contents
 PACKAGES      = [APP_BUNDLE, ACTION_BUNDLE]
 
+
+# TASKS
+# -----
 # rake clean
 CLEAN.include(APP_TEMPLATE)
 
@@ -45,19 +58,19 @@ CLEAN.include(APP_TEMPLATE)
 CLOBBER.include(File.join(BUILD_DIR, '*'))
 
 # rake test
-Rake::TestTask.new do |task|
-  task.libs.push 'lib'
-  task.test_files = FileList['test/*_test.rb']
-  task.verbose    = true
+Rake::TestTask.new do |t|
+  t.libs.push 'lib'
+  t.test_files = FileList['test/*_test.rb']
+  t.verbose    = true
 end
 
 # rake version[:...]
-Rake::VersionTask.new do |task|
-	task.with_git     = true
-	task.with_git_tag = true
+Rake::VersionTask.new do |t|
+	t.with_git     = true
+	t.with_git_tag = true
 end
 
-# directory BUILD_DIR
+# BUILD_DIR directory task
 directory BUILD_DIR
 
 # rake automator
