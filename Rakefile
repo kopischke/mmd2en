@@ -35,6 +35,7 @@ ALL_SCRIPTS   = LIB_SCRIPTS.dup.push(MAIN_SCRIPT)
 
 # Service provider app
 APP_BUNDLE    = File.join(BUILD_DIR, "#{FULL_NAME}.app")
+APP_BUNDLE_ID = "net.kopischke.#{BASE_NAME}"
 APP_DIR       = File.join(PACKAGE_DIR, 'service')
 APP_TEMPLATE  = File.join(APP_DIR, "#{BASE_NAME}.platypus")
 APP_SCRIPT    = File.join(APP_DIR, "#{BASE_NAME}.bash")
@@ -70,37 +71,23 @@ Rake::VersionTask.new do |t|
 	t.with_git_tag = true
 end
 
-# BUILD_DIR directory task
-directory BUILD_DIR
-
 # rake automator
-desc 'Generate Automator action.'
-task :automator => ACTION_BUNDLE
+Rake::SmartFileTask.new(ACTION_BUNDLE, [*ALL_SCRIPTS, ACTION_XCODE]) do |t|
+  t.verbose = true
+  t.action  = ->(*_) {
+    # Generate main.command and make executable (Action will fail if the script is not x!)
+    main_cmd      = File.expand_path(File.join(PACKAGE_DIR, 'automator', BASE_NAME, 'main.command'))
+    main_cmd_path = main_cmd.shellescape
+    %x{echo #!/usr/bin/ruby -KuW0 | cat - #{MAIN_SCRIPT.shellescape} > #{main_cmd_path} && chmod +x #{main_cmd_path}}
+    fail "Generation of '#{main_cmd}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
 
-file ACTION_BUNDLE => [*ALL_SCRIPTS, ACTION_XCODE, BUILD_DIR] do |task|
-  base_dir   = File.join(PACKAGE_DIR, 'automator')
-  project    = File.join(base_dir, "#{BASE_NAME}.xcodeproj")
-  cmd_file   = File.join(base_dir, BASE_NAME, 'main.command')
-  cmd_prefix = '#!/usr/bin/ruby -KuW0'
-
-  # Generate main.command and make executable (Action will fail if the script is not!)
-  %x{echo '#{cmd_prefix}' | cat - #{MAIN_SCRIPT.shellescape} >  #{cmd_file.shellescape} && chmod +x #{cmd_file.shellescape}}
-  fail "Generation of '#{cmd_file}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
-
-  # XCode build
-  build_settings = {
-    'CONFIGURATION_BUILD_DIR' => BUILD_DIR.shellescape,
+    # XCode build
+    build_env   = {'CONFIGURATION_BUILD_DIR' => BUILD_DIR.shellescape}.map {|k,v| "#{k}=#{v}" }.join(' ')
+    project_dir = ACTION_XCODE.pathmap('%d').shellescape
+    %x{cd #{project_dir}; xcodebuild -scheme '#{BASE_NAME}' -configuration 'Release' #{build_env}}
   }
-  %x{cd #{base_dir.shellescape}; xcodebuild -scheme '#{BASE_NAME}' -configuration 'Release' #{build_settings.map {|k,v| "#{k}=#{v}" }.join(' ')}}
+end
 
-  # Post process Info.plist: set version numbers
-  app_info = {
-    'CFBundleVersion'            => version.to_s,       # Sync version numbers
-    'CFBundleShortVersionString' => version.to_friendly # Sync version numbers
-  }
-  info_plist = InfoPList.new(ACTION_BUNDLE)
-  info_plist.data.merge!(app_info)
-  info_plist.write!
 end
 
 # rake platypus
@@ -116,51 +103,26 @@ Rake::MustacheTask.new(APP_TEMPLATE) do |t|
 end
 
 # rake app
-desc 'Generate OS X Service provider application.'
-task :app => APP_BUNDLE
+Rake::SmartFileTask.new(APP_BUNDLE, [*ALL_SCRIPTS, APP_TEMPLATE, APP_SCRIPT, *APP_YAML_DATA, BUILD_DIR]) do |t|
+  t.verbose = true
+  t.action  = ->(*_){
+    FileUtils.rm_r(APP_BUNDLE) if File.exist?(APP_BUNDLE) # Platypus’ overwrite flag `-y` is a noop as of 4.8
+    puts "Generating app bundle from Platypus template '#{template.pathmap('%f')}'."
+    %x{/usr/local/bin/platypus -l -I #{APP_BUNDLE_ID.shellescape} -P #{APP_TEMPLATE.shellescape} #{APP_BUNDLE.shellescape}}
+    fail "Error generating '#{bundle.pathmap('%f')}': `platypus` returned #{$?.exitstatus}." unless $?.exitstatus == 0
+  }
+end
 
-file APP_BUNDLE => [*ALL_SCRIPTS, APP_TEMPLATE, APP_SCRIPT, *APP_YAML_DATA, BUILD_DIR] do |task|
-  lsregister = '/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister'
 
-  if File.exist?(APP_BUNDLE) # Platypus’ overwrite flag `-y` is a noop as of 4.8
-    puts 'Deleting previous app bundle...'
-    %x{#{lsregister} -u #{APP_BUNDLE.shellescape}}
-    FileUtils.rm_r(APP_BUNDLE)
-  end
-
-  %x{/usr/local/bin/platypus -l -I net.kopischke.#{BASE_NAME} -P #{APP_TEMPLATE.shellescape} #{APP_BUNDLE.shellescape}}
-  fail "Generation of '#{APP_BUNDLE}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
-
-  # Post process Info.plist: set info not set by Platypus
-  uti_defs = YAML.load_file(File.join(File.dirname(APP_TEMPLATE), "#{BASE_NAME}.utis.yaml"))
-  supported_types = uti_defs.values
   supported_utis  = supported_types.map {|e| e['UTTypeIdentifier'] }
 
-  doc_type       = { # declare MutiMarkdown compatible document handling
-    'LSItemContentTypes'     => supported_utis,
-    'CFBundleTypeRole'       => 'Viewer',
-    'LSHandlerRank'          => 'None'
   }
-  ns_services    = { # declare as Text service accepting compatible files
-    'NSRequiredContext'      => {'NSServiceCategory' => 'public.text'},
-    'NSSendFileTypes'        => supported_utis,
-    'NSSendTypes'            => ['NSStringPboardType']
-  }
-  app_info       = { # Info.plist root
     'CFBundleDocumentTypes'      => [doc_type],          # override handled file types
     'UTImportedTypeDeclarations' => supported_types,     # import supported UTIs
     'CFBundleShortVersionString' => version.to_friendly, # sync version numbers
     'LSMinimumSystemVersion'     => '10.9.0'             # minimum for system Ruby 2
   }
 
-  puts 'Rewriting Info.plist...'
-  info_plist = InfoPList.new(APP_BUNDLE)
-  info_plist.data.merge!(app_info)
-  info_plist.data['NSServices'][0].merge!(ns_services)
-  info_plist.write!
-
-  puts 'Registering app with launch Services...'
-  %x{#{lsregister} -f #{APP_BUNDLE.shellescape}}
 end
 
 # rake build
