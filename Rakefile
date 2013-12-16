@@ -5,6 +5,7 @@ require 'bundler/setup'
 require 'info_plist'
 require 'rake/clean'
 require 'rake/mustache_task'
+require 'rake/osx/bundle_editor_task'
 require 'rake/testtask'
 require 'rake/version_task'
 require 'rake/zip_task'
@@ -88,6 +89,11 @@ Rake::SmartFileTask.new(ACTION_BUNDLE, [*ALL_SCRIPTS, ACTION_XCODE]) do |t|
   }
 end
 
+Rake::OSX::BundleEditorTask.new(:automator, ACTION_BUNDLE) do |t|
+  t.description = 'Generate Automator action.'
+  t.verbose     = true
+  t.set_version = version.to_friendly
+  t.set_build   = version.to_s
 end
 
 # rake platypus
@@ -113,16 +119,36 @@ Rake::SmartFileTask.new(APP_BUNDLE, [*ALL_SCRIPTS, APP_TEMPLATE, APP_SCRIPT, *AP
   }
 end
 
+Rake::OSX::BundleEditorTask.new(:app, APP_BUNDLE) do |t|
+  t.description = 'Generate OS X Service provider application.'
+  t.verbose     = true
+  t.set_version = version.to_friendly
+  t.set_build   = version.to_s
 
+  supported_types = YAML.load_file(File.join(File.dirname(APP_TEMPLATE), "#{BASE_NAME}.utis.yaml")).values
   supported_utis  = supported_types.map {|e| e['UTTypeIdentifier'] }
 
+  doc_type   = { # declare MutiMarkdown compatible document handling
+    'LSItemContentTypes' => supported_utis,
+    'CFBundleTypeRole'   => 'Viewer',
+    'LSHandlerRank'      => 'None'
   }
+  app_info   = { # Info.plist root
     'CFBundleDocumentTypes'      => [doc_type],          # override handled file types
     'UTImportedTypeDeclarations' => supported_types,     # import supported UTIs
-    'CFBundleShortVersionString' => version.to_friendly, # sync version numbers
     'LSMinimumSystemVersion'     => '10.9.0'             # minimum for system Ruby 2
   }
+  ns_services = { # declare as Text service accepting compatible files
+    'NSMenuItem'        => {'default' => FULL_NAME},
+    'NSRequiredContext' => {'NSServiceCategory' => 'public.text'},
+    'NSSendFileTypes'   => supported_utis,
+    'NSSendTypes'       => ['NSStringPboardType']
+  }
 
+  t.merge_info = ->(data){
+    data.merge!(app_info)
+    data.fetch('NSServices', [{}])[0].merge(ns_services)
+  }
 end
 
 # rake build
