@@ -6,7 +6,8 @@ module Rake
   # Rake task class for smart file generation / processing tasks:
   # auto-target dir creation, optional named task alias, optional named group task.
   class SmartFileTask < TaskLib
-    attr_accessor :target, :base, :action, :named_task, :group_task, :verbose
+    attr_accessor :target, :base, :action, :verbose
+    attr_reader   :named_task, :group_task
     class << self
       def tasks;  @@tasks;  end
       def groups; @@groups; end
@@ -21,14 +22,14 @@ module Rake
     # binds `puts` to Rake default output, quiet unless @verbose is set
     include Rake::ReducedOutput
 
-    def initialize(target = nil, base = nil, action = nil, named_task: nil, group_task: nil, verbose: false)
-      @target     = target
-      @base       = base
-      @action     = action
-      @named_task = {task_name(named_task) => task_desc(named_task)} unless named_task.nil?
-      @group_task = {task_name(group_task) => task_desc(group_task)} unless group_task.nil?
-      @verbose    = verbose
-      @defined    = false
+    def initialize(target = nil, base = nil, action = nil, named_task_info: nil, group_task_info: nil, verbose: false)
+      @target    = target
+      @base      = base
+      @action    = action
+      named_task = named_task_info
+      group_task = group_task_info
+      @verbose   = verbose
+      @defined   = false
 
       yield(self) if block_given?
 
@@ -40,15 +41,26 @@ module Rake
       define unless required.reject {|e| e.nil? || e.empty? }.count != required.count || @action.nil?
     end
 
+    def named_task=(task_info)
+      @named_task = parse_task_info(task_info)
+    end
+
+    def group_task=(task_info)
+      @group_task = parse_task_info(task_info)
+    end
 
   private
-    def task_name(task_def)
-      task_name = task_def.is_a?(Hash) ? task_def.keys.first : task_def
+    def task_name(task_info)
+      task_name = task_info.is_a?(Hash) ? task_info.keys.first : task_info
       String(task_name).strip.downcase.to_sym[/^.+$/]
     end
 
-    def task_desc(task_def)
-      String(task_def.values.first)[/^.+$/] if task_def.is_a?(Hash)
+    def task_desc(task_info)
+      String(task_info.values.first)[/^.+$/] if task_info.is_a?(Hash)
+    end
+
+    def parse_task_info(task_info)
+      {task_name(task_info) => task_desc(task_info)} unless task_info.nil?
     end
 
     def define
