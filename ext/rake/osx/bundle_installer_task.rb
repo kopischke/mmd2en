@@ -12,8 +12,8 @@ module Rake
       alias :bundle  :base
       alias :bundle= :base=
 
-      # restrict `actions` and `args` access to r/o
-      protected :action=, :args=
+      # restrict `actions` access to r/o
+      protected :action=
 
       def initialize(to_install, type = nil, user_install: nil, move_bundle: true, **kwargs, &block)
         @bundle_type  = type || guess_type(to_install)

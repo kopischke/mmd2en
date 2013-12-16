@@ -13,8 +13,8 @@ module Rake
     alias :files    :base
     alias :files=   :base=
 
-    # restrict `actions` and `args` access to r/o
-    protected :action=, :args=
+    # restrict `actions` access to r/o
+    protected :action=
 
     def initialize(archive_file, file_paths = nil, move: false, recurse: true, relative: true, exclude: [], **kwargs, &block)
       @move     = move

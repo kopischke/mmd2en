@@ -20,7 +20,7 @@ module Rake
       action = ->(*_){
         puts "Rendering Mustache template '#{@base.pathmap('%f')}' to '#{@target.pathmap('%f')}'..."
         Mustache.template_file = @base
-        File.write(@target, Mustache.render(@data.respond_to?(:call) ? @data.call(*@args) : @data))
+        File.write(@target, Mustache.render(@data.respond_to?(:call) ? @data.call(self) : @data))
       }
       template_file = template_file || "#{target}.mustache"
       super(target, template_file, action, **kwargs, &block)

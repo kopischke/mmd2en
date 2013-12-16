@@ -6,7 +6,7 @@ module Rake
   # Rake task class for smart file generation / processing tasks:
   # auto-target dir creation, optional named task alias, optional named group task.
   class SmartFileTask < TaskLib
-    attr_accessor :target, :base, :action, :args, :named_task, :group_task, :verbose
+    attr_accessor :target, :base, :action, :named_task, :group_task, :verbose
     class << self
       def tasks;  @@tasks;  end
       def groups; @@groups; end
@@ -21,11 +21,10 @@ module Rake
     # binds `puts` to Rake default output, quiet unless @verbose is set
     include Rake::ReducedOutput
 
-    def initialize(target = nil, base = nil, action = nil, *args, named_task: nil, group_task: nil, verbose: false)
+    def initialize(target = nil, base = nil, action = nil, named_task: nil, group_task: nil, verbose: false)
       @target     = target
       @base       = base
       @action     = action
-      @args       = args
       @named_task = {task_name(named_task) => task_desc(named_task)} unless named_task.nil?
       @group_task = {task_name(group_task) => task_desc(group_task)} unless group_task.nil?
       @verbose    = verbose
@@ -59,7 +58,7 @@ module Rake
 
       # file task for @target creation
       file @target => [*@base, target_dir] do
-        @action.call(*@args)
+        @action.call(self)
       end
 
       # :@named_task task (if provided)
