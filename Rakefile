@@ -10,7 +10,7 @@ require 'rake/version_task'
 require 'rake/zip_task'
 require 'shellwords'
 require 'version'
-require 'version/semantics'
+require 'version/conversions'
 require 'yaml'
 
 def version
