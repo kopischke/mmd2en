@@ -2,7 +2,6 @@
 $:.push File.join(File.dirname(__FILE__), 'ext')
 
 require 'bundler/setup'
-require 'info_plist'
 require 'rake/clean'
 require 'rake/mustache_task'
 require 'rake/osx/bundle_editor_task'
