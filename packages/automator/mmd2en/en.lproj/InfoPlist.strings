@@ -16,7 +16,6 @@ AMName = "MultiMarkdown to Evernote";
 AMDAlert = "";
 AMDInput = "MultiMarkdown formatted text and metadata in the following formats: MultiMarkdown, YAML frontmatter, MD2EN legacy.";
 AMDNote = "";
-AMDOptions = "Set the path to the `multimarkdown` executable you want to use here (if the default does not work, check the output of `which -a multimarkdown`). ";
 AMDResult = "None.";
 AMDRequires = "System Ruby version 2 (standard with OS X 10.9), MultiMarkdown version 4 (4.3 or better recommended).";
 AMDSummary = "This action creates an Evernote note with content and metadata set from the MultiMarkdown text input.";

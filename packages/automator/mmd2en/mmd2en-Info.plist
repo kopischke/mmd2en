@@ -22,7 +22,10 @@
 	<key>AMCategory</key>
 	<string>AMCategoryText</string>
 	<key>AMDefaultParameters</key>
-	<dict/>
+	<dict>
+		<key>MULTIMARKDOWN</key>
+		<string>./bin/multimarkdown</string>
+	</dict>
 	<key>AMDescription</key>
 	<dict>
 		<key>AMDAlert</key>
@@ -32,7 +35,7 @@
 		<key>AMDNote</key>
 		<string></string>
 		<key>AMDOptions</key>
-		<string>mmd2en.AMDOptions</string>
+		<string></string>
 		<key>AMDRelatedActions</key>
 		<string></string>
 		<key>AMDRequires</key>

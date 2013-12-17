@@ -14,6 +14,7 @@
 		5B4ED62418500D2300B4B48A /* mmd2en-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5B4ED62318500D2300B4B48A /* mmd2en-Info.plist */; };
 		5B4ED626185015D200B4B48A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5B4ED5E7184FF3A000B4B48A /* InfoPlist.strings */; };
 		5B4ED62E18502B1F00B4B48A /* lib in Resources */ = {isa = PBXBuildFile; fileRef = 5B4ED62D18502B1F00B4B48A /* lib */; };
+		5B8A39AB18607E2D007ABED5 /* bin in Resources */ = {isa = PBXBuildFile; fileRef = 5B8A39AA18607E2D007ABED5 /* bin */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -31,6 +32,7 @@
 		5B4ED6281850186400B4B48A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/main.strings; sourceTree = "<group>"; };
 		5B4ED62A1850186600B4B48A /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/main.strings; sourceTree = "<group>"; };
 		5B4ED62D18502B1F00B4B48A /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = ../../../lib; sourceTree = "<group>"; };
+		5B8A39AA18607E2D007ABED5 /* bin */ = {isa = PBXFileReference; lastKnownFileType = folder; name = bin; path = ../../multimarkdown/bin; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -88,6 +90,7 @@
 		5B4ED5E4184FF3A000B4B48A /* mmd2en */ = {
 			isa = PBXGroup;
 			children = (
+				5B8A39AA18607E2D007ABED5 /* bin */,
 				5B4ED5EA184FF3A000B4B48A /* main.command */,
 				5B4ED5EC184FF3A000B4B48A /* main.xib */,
 				5B4ED5E5184FF3A000B4B48A /* Supporting Files */,
@@ -158,6 +161,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5B8A39AB18607E2D007ABED5 /* bin in Resources */,
 				5B4ED62E18502B1F00B4B48A /* lib in Resources */,
 				5B4ED5EE184FF3A000B4B48A /* main.xib in Resources */,
 				5B4ED5EB184FF3A000B4B48A /* main.command in Resources */,

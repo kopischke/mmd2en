@@ -16,7 +16,6 @@ AMName = "MultiMarkdown nach Evernote";
 AMDAlert = "";
 AMDInput = "MultiMarkdown-formatierter Text und Metadaten im einem der folgenden Formate: MultiMarkdown, YAML Frontmatter, MD2EN Legacy.";
 AMDNote = "";
-AMDOptions = "Pfad zum `multimarkdown`-Kommando , dass verwendet werden soll (wenn die Vorgabe nicht passt, sollte die Ausgabe von `which -a multimarkdown` überprüft werden).";
 AMDResult = "Keine.";
 AMDRequires = "System-Ruby Version 2 (Standard mit OS X 10.9), MultiMarkdown Version 4 (4.3 oder höher empfohlen).";
 AMDSummary = "Bei dieser Aktion wird eine Evernote-Notiz mit Inhalt und Metadaten entsprechend dem übergebenem MultiMarkdown-Text erzeugt.";

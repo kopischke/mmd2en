@@ -13,32 +13,6 @@
         <customView id="5" userLabel="View">
             <rect key="frame" x="0.0" y="0.0" width="400" height="39"/>
             <autoresizingMask key="autoresizingMask"/>
-            <subviews>
-                <textField verticalHuggingPriority="750" id="EE9-S1-RPb">
-                    <rect key="frame" x="129" y="10" width="261" height="19"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="/path/to/multimarkdown" drawsBackground="YES" id="bOf-ol-WcX">
-                        <font key="font" metaFont="smallSystem"/>
-                        <color key="textColor" name="textColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        <connections>
-                            <binding destination="6" name="value" keyPath="selection.MULTIMARKDOWN" id="eEw-bz-yHC"/>
-                        </connections>
-                    </textFieldCell>
-                    <connections>
-                        <binding destination="6" name="value" keyPath="selection.MULTIMARKDOWN" id="TUl-Bm-HUi"/>
-                    </connections>
-                </textField>
-                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ntQ-e9-tmY">
-                    <rect key="frame" x="10" y="12" width="122" height="14"/>
-                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                    <textFieldCell key="cell" controlSize="small" scrollable="YES" lineBreakMode="clipping" sendsActionOnEndEditing="YES" title="multimarkdown path" id="LHL-hQ-xKm">
-                        <font key="font" metaFont="smallSystem"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                    </textFieldCell>
-                </textField>
-            </subviews>
         </customView>
         <objectController id="6" userLabel="Parameters">
             <declaredKeys>
