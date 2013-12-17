@@ -12,8 +12,9 @@
 	<string>Martin Kopischke</string>
 	<key>BundledFiles</key>
 	<array>
-		<string>{{base_dir}}/{{base_name}}.rb</string>
-		<string>{{base_dir}}/lib</string>
+		{{#includes}}
+			<string>{{path}}</string>
+		{{/includes}}
 	</array>
 	<key>Creator</key>
 	<string>Platypus-4.8</string>

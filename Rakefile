@@ -25,12 +25,13 @@ FULL_NAME     = 'MultiMarkdown → Evernote'
 
 # Build system directory structure
 BASE_DIR      = File.join(File.expand_path(File.dirname(__FILE__)))
+LIB_DIR       = File.join(BASE_DIR, 'lib')
 BUILD_DIR     = File.join(BASE_DIR, 'build')
 PACKAGE_DIR   = File.join(BASE_DIR, 'packages')
 
 # Core scripts
 MAIN_SCRIPT   = File.join(BASE_DIR, "#{BASE_NAME}.rb")
-LIB_SCRIPTS   = FileList.new(File.join(BASE_DIR, 'lib', '*.rb'))
+LIB_SCRIPTS   = FileList.new(File.join(LIB_DIR, '*.rb'))
 ALL_SCRIPTS   = LIB_SCRIPTS.dup.push(MAIN_SCRIPT)
 
 # Service provider app
@@ -45,6 +46,10 @@ APP_YAML_DATA = FileList.new(File.join(APP_DIR, "#{BASE_NAME}.*.yaml"))
 ACTION_BUNDLE = File.join(BUILD_DIR, "#{BASE_NAME}.action")
 ACTION_DIR    = File.join(PACKAGE_DIR, 'automator')
 ACTION_XCODE  = File.join(ACTION_DIR, "#{BASE_NAME}.xcodeproj")
+
+# Required components
+MMD_BIN_DIR   = File.join(PACKAGE_DIR, 'multimarkdown', 'bin')
+MMD_BIN       = FileList.new(File.join(MMD_BIN_DIR, 'multimarkdown'), File.join(MMD_BIN_DIR, 'LICENSE'))
 
 # Package upload contents
 PACKAGES      = [APP_BUNDLE, ACTION_BUNDLE]
@@ -100,16 +105,18 @@ Rake::MustacheTask.new(APP_TEMPLATE) do |t|
   t.named_task = {platypus: 'Generate Platypus template for OS X Service provider application'}
   t.verbose    = true
   t.data       = {
-    base_dir:  File.expand_path(BASE_DIR),
-    base_name: BASE_NAME,
-    full_name: FULL_NAME,
-    version:   version.to_s
+    base_dir:    File.expand_path(BASE_DIR),
+    base_name:   BASE_NAME,
+    full_name:   FULL_NAME,
+    version:     version.to_s
+    includes: [MAIN_SCRIPT, "#{LIB_DIR}#{File::SEPARATOR}", "#{MMD_BIN_DIR}#{File::SEPARATOR}"].map {|e| {path: e} },
   }
 end
 
 # rake app
-Rake::SmartFileTask.new(APP_BUNDLE, [*ALL_SCRIPTS, APP_TEMPLATE, APP_SCRIPT, *APP_YAML_DATA, BUILD_DIR]) do |t|
+Rake::SmartFileTask.new(APP_BUNDLE) do |t|
   t.verbose = true
+  t.base    = [*ALL_SCRIPTS, APP_TEMPLATE, APP_SCRIPT, *APP_YAML_DATA, MMD_BIN, BUILD_DIR]
   t.action  = ->(*_){
     FileUtils.rm_r(APP_BUNDLE) if File.exist?(APP_BUNDLE) # Platypus’ overwrite flag `-y` is a noop as of 4.8
     puts "Generating app bundle from Platypus template '#{template.pathmap('%f')}'."
