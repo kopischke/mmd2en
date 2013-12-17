@@ -105,11 +105,12 @@ Rake::MustacheTask.new(APP_TEMPLATE) do |t|
   t.named_task = {platypus: 'Generate Platypus template for OS X Service provider application'}
   t.verbose    = true
   t.data       = {
-    base_dir:    File.expand_path(BASE_DIR),
-    base_name:   BASE_NAME,
-    full_name:   FULL_NAME,
-    version:     version.to_s
+    name:     FULL_NAME,
     includes: [MAIN_SCRIPT, "#{LIB_DIR}#{File::SEPARATOR}", "#{MMD_BIN_DIR}#{File::SEPARATOR}"].map {|e| {path: e} },
+    icon:     File.join(APP_DIR, "#{BASE_NAME}.icns"),
+    script:   APP_SCRIPT,
+    version:  version.to_s,
+    platypus: '/usr/local/share/platypus'
   }
 end
 
