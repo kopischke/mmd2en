@@ -48,7 +48,12 @@
 		<string>mmd2en.AMDWebsite</string>
 	</dict>
 	<key>AMKeywords</key>
-	<array/>
+	<array>
+		<string>convert</string>
+		<string>MMD</string>
+		<string>HTML</string>
+		<string>metadata</string>
+	</array>
 	<key>AMName</key>
 	<string>mmd2en.AMName</string>
 	<key>AMProvides</key>

@@ -22,7 +22,8 @@ AMDSummary = "Bei dieser Aktion wird eine Evernote-Notiz mit Inhalt und Metadate
 AMDWebsite = "https://github.com/kopischke/mmd2en";
 
 /* AMKeyword localized strings */
-/* e.g. "Filter" = "Filter"; */
+"convert" = "umwandeln konvertieren";
+"metadata" = "Metadaten";
 
 /* AMWarning localized strings */
 ApplyButton = "(* Button label for user to add proposed Action, e.g. Add. *)";
