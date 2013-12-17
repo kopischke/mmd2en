@@ -59,7 +59,18 @@
 		<array/>
 	</dict>
 	<key>AMRequiredResources</key>
-	<array/>
+	<array>
+		<dict>
+			<key>Display Name</key>
+			<string>Evernote</string>
+			<key>Resource</key>
+			<string>com.evernote.evernote</string>
+			<key>Type</key>
+			<string>application</string>
+			<key>Version</key>
+			<string>5.0</string>
+		</dict>
+	</array>
 	<key>AMWarning</key>
 	<dict>
 		<key>Action</key>

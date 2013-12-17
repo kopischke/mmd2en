@@ -17,7 +17,7 @@ AMDAlert = "";
 AMDInput = "MultiMarkdown formatted text and metadata in the following formats: MultiMarkdown, YAML frontmatter, MD2EN legacy.";
 AMDNote = "";
 AMDResult = "None.";
-AMDRequires = "System Ruby version 2 (standard with OS X 10.9), MultiMarkdown version 4 (4.3 or better recommended).";
+AMDRequires = "Evernote Desktop for OS X version 5 or higher.";
 AMDSummary = "This action creates an Evernote note with content and metadata set from the MultiMarkdown text input.";
 AMDWebsite = "https://github.com/kopischke/mmd2en";
 
