@@ -80,14 +80,8 @@
 	<dict>
 		<key>Action</key>
 		<string>(* Action name to be suggested to add prior to this action to make the task safer, e.g. com.apple.Automator.CopyFiles, goes here. *)</string>
-		<key>ApplyButton</key>
-		<string>(* Button label for user to add proposed Action, e.g. Add. *)</string>
-		<key>IgnoreButton</key>
-		<string>(* Button label for user not to add proposed Action, e.g. Don't Add. *)</string>
 		<key>Level</key>
 		<integer>0</integer>
-		<key>Message</key>
-		<string>(* Warning message presented to user goes here. *)</string>
 	</dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>

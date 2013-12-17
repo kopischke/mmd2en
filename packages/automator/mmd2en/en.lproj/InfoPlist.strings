@@ -25,7 +25,5 @@ AMDWebsite = "https://github.com/kopischke/mmd2en";
 /* e.g. "Filter" = "Filter"; */
 
 /* AMWarning localized strings */
-ApplyButton = "(* Button label for user to add proposed Action, e.g. Add. *)";
-IgnoreButton = "(* Button label for user not to add proposed Action, e.g. Don't Add. *)";
-Message = "(* Warning message presented to user goes here. *)";
+/* e.g. ApplyButton = "(* Button label for user to add proposed Action, e.g. Add. *)"; */
 
