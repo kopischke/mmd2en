@@ -7,23 +7,25 @@ module Rake
   # dynamically generated data (as opposed to static YAML data).
   class MustacheTask < SmartFileTask
     attr_accessor :data
-
-    # syntactic sugar
-    alias :template  :base
-    alias :template= :base=
+    attr_writer   :template
 
     # restrict `actions` access to r/o
     protected :action=
 
     def initialize(target, template_file: nil, data: nil, **kwargs, &block)
-      @data  = data
-      action = ->(*_){
-        puts "Rendering Mustache template '#{@base.pathmap('%f')}' to '#{@target.pathmap('%f')}'..."
-        Mustache.template_file = @base
+      @target   = target
+      @template = template_file
+      @data     = data
+      action    = ->(*_){
+        puts "Rendering Mustache template '#{template.pathmap('%f')}' to '#{@target.pathmap('%f')}'..."
+        Mustache.template_file = template
         File.write(@target, Mustache.render(@data.respond_to?(:call) ? @data.call(self) : @data))
       }
-      template_file = template_file || "#{target}.mustache"
-      super(target, template_file, action, **kwargs, &block)
+      super(target, template, action, **kwargs, &block)
+    end
+
+    def template
+      @template ||= "#{@target}.mustache"
     end
   end
 end
