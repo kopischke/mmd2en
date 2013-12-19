@@ -1,10 +1,12 @@
-# MMD2EN – turn MultiMarkdown into Evernote notes #
+# MultiMarkdown → Evernote #
 
-In beta – documentation not done yet. The following applies to the downloadable package only:
+**WARNING:** this documentation is preliminary. The following applies to the downloadable package only:
 
-## Package contents (as of Beta 3) ##
+## Package contents (as of RC 1) ##
 
-The package’s main component is **MultiMarkdown → Evernote**, an application that provides a service to create Evernote notes both from selected text and from Markdown files. The services should create a note of the converted MultiMarkdown content and set note metadata to match metadata in the source (i.e. if you have a *url* metadata field, the source URL of the created Evernote note will be set to that). Currently, settable metadata is:
+The package’s main component is **MultiMarkdown → Evernote**, an application that provides a service to create Evernote notes both from selected text and from Markdown files. An **Automator action** for processing text input in workflows is also included, but it is not required for using the services.
+
+Both the services and the action should create a note of the converted MultiMarkdown content and set the newly created note’s metadata to match the metadata found in the MultiMarkdown source (i.e. if you have a *url* metadata field, the source URL of the created Evernote note will be set to that). Currently, settable metadata is:
 
 1. title (falling back to the first level 1 heading, then to the current date if no other title is found)
 2. notebook (created if not known to Evernote yet)
@@ -18,27 +20,30 @@ Metadata can be in [MultiMarkdown metadata format][mmd-metadata] or in [YAML fro
 
 ### Requirements ###
 
-For the conversion to work, you need:
+1. OS X 10.9 “Mavericks” (or better) and
+2. the [Evernote desktop application][evernote-osx] version 5 (or better).
 
-1. OS X 10.9 “Mavericks”, as the underlying scripts needs a system Ruby version 2 to run – the app should not even start on OS versions below that;
-2. a [`multimarkdown` version 4][mmd-home] executable either in your `$PATH`, or pointed to by doing `export MULTIMARKDOWN=/path/to/multimarkdown` in your `.bash_profile` (independently of your actual shell – the app always uses `bash`). For best metadata support, MultiMarkdown 4.3 or better is recommended (if you use [Homebrew][brew-home], `brew install multimarkdown` is your ticket);
-3. the [Evernote desktop application][evernote-osx] version 5.
+### Caveats: MultiMarkdown → Evernote app ###
 
-### Caveats ###
-
-* The application is not code signed, so Gatekeeper will not let it start – you will need to right click holding *Option* and select *Open* once (it should start fine after that).
-* The services provided need to be activated in System Preferences’ Keyboard shortcut settings (reachable via the *Application menu → Services → Service Settings*). The service is found in the Text area (activating it also activates file handling).
-* The application only accepts **files** recognized as Markdown (including [Fountain][fountain-home] and [Ronn][ronn-home] files), not generic text files or source code formats with Markdown content, and the file service is only active on these. If you need to convert other file types, you can either change their extension to match a recognized Markdown type, or open them and process their content with the **text** service. Also note that you cannot open files directly with the application (it will not show in the *Open in…* menu), but you *can* drop supported files on its icon.
+* The app is not code signed, so Gatekeeper will not let it start – you will need to right click holding *Option* and select *Open* once (it should start fine after that).
+* The app only accepts **files** it recognizes as Markdown through their extension (all typical Markdown file extensions, plus [Fountain][fountain-home] and [Ronn][ronn-home] ones), not generic text or source code files with Markdown content, and the file service is only available for these. If you need to convert other file types, you can either change their extension to match a recognized Markdown type, or open them and process their content with the **text** service. Also note that you cannot open files directly with the application (it will not show in the *Open in…* menu), but you *can* drop supported files on its icon.
 * The application does not quit after processing the files: this is due to [a bug][platypus-issue-26] in the termination handling routine of the script runner used ([Platypus][platypus-home]). It does, however, consume very little RAM (about 10 Megs idle), and you can quit it manually (or via script, shell etc.) like any other app.
 
-### Automator ###
+### Caveats: Automator action ###
 
-An **Automator action** for processing text input in workflows is also included, but it is not required for using the services. Note that, as Automator actions only have access to a minimal `$PATH`, you will have to set the path to your `multimarkdown` executable in the Action options, unless it is located at `/usr/local/bin/multimarkdown` (the default).
+* The Automator action cannot process files – that is [a limitation of script based actions][apple-dev-actions].
+* It does not return anything you can use in further actions, as Evernote notes are not a data type handled by Automator workflows.
 
+## Troubleshooting ##
+
+Please refer to the [wiki][mmd2en-wiki] for troubleshooting instructions.
+
+[apple-dev-actions]:        https://developer.apple.com/library/mac/documentation/AppleApplications/Conceptual/AutomatorConcepts/Articles/ShellScriptActions.html#//apple_ref/doc/uid/TP40002078-96877 
 [brew-home]:         http://brew.sh
 [evernote-osx]:      http://evernote.com/download/get.php?file=EvernoteMac
 [fountain-home]:     http://fountain.io/
 [md2en]:             http://nsuserview.kopischke.net/post/6223792409/i-can-has-some-markdown
+[mmd2en-wiki]:       https://github.com/kopischke/mmd2en/wiki
 [mmd-home]:          http://fletcherpenney.net/multimarkdown/
 [mmd-metadata]:      http://fletcher.github.com/peg-multimarkdown/mmd-manual.pdf
 [platypus-home]:     http://sveinbjorn.org/platypus
