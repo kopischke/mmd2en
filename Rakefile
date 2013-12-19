@@ -54,6 +54,7 @@ MMD_BIN       = FileList.new(File.join(MMD_BIN_DIR, 'multimarkdown'), File.join(
 
 # Package upload contents
 PACKAGES      = [APP_BUNDLE, ACTION_BUNDLE]
+PACKAGE_TASKS = [:app, :automator]
 
 
 # TASKS
@@ -168,13 +169,14 @@ end
 
 # rake build
 desc 'Build all packages.'
-task :build => [:clobber, *PACKAGES]
+task :build => [:clobber, *PACKAGE_TASKS]
 
 # rake zip
 Rake::ZipTask.new(File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}")) do |t|
   t.named_task = {zip: 'Zip all packages for upload to GitHub.'}
-  t.files      = PACKAGES
   t.verbose    = true
+  t.files      = PACKAGES
+  t.base       = PACKAGE_TASKS # depending on the files skips bundle editing
 end
 
 desc 'Test and build.'
