@@ -159,7 +159,7 @@ Rake::OSX::BundleEditorTask.new(:app, APP_BUNDLE) do |t|
     'NSSendTypes'       => ['NSStringPboardType']
   }
 
-  t.merge_info = ->(data){
+  t.edit_info = ->(data){
     data.merge!(app_info)
     data['NSServices'] = [data.fetch('NSServices', [{}])[0].merge(ns_services)]
     data

@@ -9,7 +9,7 @@ module Rake
     # Rake task to post-process OS X application bundles.
     class BundleEditorTask < TaskLib
       attr_accessor :name, :description, :bundle
-      attr_accessor :add_resources, :add_localizations, :merge_info, :set_version, :set_build, :verbose
+      attr_accessor :add_resources, :add_localizations, :edit_info, :set_version, :set_build, :verbose
       attr_writer   :register_services
 
       # binds `puts` to Rake default output, quiet unless @verbose is set
@@ -24,7 +24,7 @@ module Rake
         @bundle            = bundle
         @add_resources     = resources
         @add_localizations = localizations
-        @merge_info        = info
+        @edit_info         = info
         @register_services = services
         @set_version       = version
         @set_build         = build
@@ -63,11 +63,11 @@ module Rake
           end
 
           # modify Info.plist
-          unless localizations.nil? && @merge_info.nil? && @set_version.nil? && @set_build.nil?
+          unless localizations.nil? && @edit_info.nil? && @set_version.nil? && @set_build.nil?
             ::OSX::PList.open(@bundle) do |data|
               puts "Setting Info.plist values for '#{@bundle.pathmap('%f')}'..."
               data = data.merge({'CFBundleLocalizations' => localizations}) unless localizations.nil?
-              data = @merge_info.respond_to?(:call) ? @merge_info.call(data) : data.merge(@merge_info) unless @merge_info.nil?
+              data = @edit_info.respond_to?(:call) ? @edit_info.call(data) : data.merge(@edit_info) unless @edit_info.nil?
               data = data.merge({'CFBundleShortVersionString' => @set_version}) unless @set_version.nil?
               data = data.merge({'CFBundleVersion' => @set_build}) unless @set_build.nil?
               data
