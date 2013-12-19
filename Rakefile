@@ -46,6 +46,7 @@ APP_YAML_DATA = FileList.new(File.join(APP_DIR, "#{BASE_NAME}.*.yaml"))
 ACTION_BUNDLE = File.join(BUILD_DIR, "#{BASE_NAME}.action")
 ACTION_DIR    = File.join(PACKAGE_DIR, 'automator')
 ACTION_XCODE  = File.join(ACTION_DIR, "#{BASE_NAME}.xcodeproj")
+ACTION_SCRIPT = File.join(PACKAGE_DIR, 'automator', BASE_NAME, 'main.command')
 
 # Required components
 MMD_BIN_DIR   = File.join(PACKAGE_DIR, 'multimarkdown', 'bin')
@@ -76,17 +77,21 @@ Rake::VersionTask.new do |t|
 	t.with_git_tag = true
 end
 
-# rake automator
-Rake::SmartFileTask.new(ACTION_BUNDLE, [*ALL_SCRIPTS, ACTION_XCODE]) do |t|
+# rake automator[:prepare]
+Rake::SmartFileTask.new(ACTION_SCRIPT, MAIN_SCRIPT) do |t|
+  t.verbose    = true
+  t.named_task = {:'automator:prepare' => 'Update main script for Automator action.'}
+  t.action     = ->(*_) {
+    # Generate main.command and make executable (Action will fail if the script is not x!)
+    main_script = ACTION_SCRIPT.shellescape
+    %x{echo '#!/usr/bin/ruby -KuW0' | cat - #{MAIN_SCRIPT.shellescape} > #{main_script} && chmod +x #{main_script}}
+    fail "Generation of '#{ACTION_SCRIPT}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
+  }
+end
+
+Rake::SmartFileTask.new(ACTION_BUNDLE, [ACTION_SCRIPT, *LIB_SCRIPTS, ACTION_XCODE]) do |t|
   t.verbose = true
   t.action  = ->(*_) {
-    # Generate main.command and make executable (Action will fail if the script is not x!)
-    main_cmd      = File.expand_path(File.join(PACKAGE_DIR, 'automator', BASE_NAME, 'main.command'))
-    main_cmd_path = main_cmd.shellescape
-    %x{echo #!/usr/bin/ruby -KuW0 | cat - #{MAIN_SCRIPT.shellescape} > #{main_cmd_path} && chmod +x #{main_cmd_path}}
-    fail "Generation of '#{main_cmd}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
-
-    # XCode build
     build_env   = {'CONFIGURATION_BUILD_DIR' => BUILD_DIR.shellescape}.map {|k,v| "#{k}=#{v}" }.join(' ')
     project_dir = ACTION_XCODE.pathmap('%d').shellescape
     %x{cd #{project_dir}; xcodebuild -scheme '#{BASE_NAME}' -configuration 'Release' #{build_env}}
