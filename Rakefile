@@ -161,7 +161,8 @@ Rake::OSX::BundleEditorTask.new(:app, APP_BUNDLE) do |t|
 
   t.merge_info = ->(data){
     data.merge!(app_info)
-    data.fetch('NSServices', [{}])[0].merge(ns_services)
+    data['NSServices'] = [data.fetch('NSServices', [{}])[0].merge(ns_services)]
+    data
   }
 end
 
