@@ -111,6 +111,7 @@ Rake::MustacheTask.new(APP_TEMPLATE) do |t|
   t.verbose    = true
   t.data       = {
     name:     FULL_NAME,
+    id:       APP_BUNDLE_ID,
     includes: [MAIN_SCRIPT, "#{LIB_DIR}#{File::SEPARATOR}", "#{MMD_BIN_DIR}#{File::SEPARATOR}"].map {|e| {path: e} },
     icon:     File.join(APP_DIR, "#{BASE_NAME}.icns"),
     script:   APP_SCRIPT,
@@ -126,7 +127,8 @@ Rake::SmartFileTask.new(APP_BUNDLE) do |t|
   t.action  = ->(*_){
     FileUtils.rm_r(APP_BUNDLE) if File.exist?(APP_BUNDLE) # Platypus’ overwrite flag `-y` is a noop as of 4.8
     puts "Generating app bundle from Platypus template '#{template.pathmap('%f')}'."
-    %x{/usr/local/bin/platypus -l -I #{APP_BUNDLE_ID.shellescape} -P #{APP_TEMPLATE.shellescape} #{APP_BUNDLE.shellescape}}
+    p APP_BUNDLE_ID
+    %x{/usr/local/bin/platypus -l -P #{APP_TEMPLATE.shellescape} #{APP_BUNDLE.shellescape}}
     fail "Error generating '#{bundle.pathmap('%f')}': `platypus` returned #{$?.exitstatus}." unless $?.exitstatus == 0
   }
 end
