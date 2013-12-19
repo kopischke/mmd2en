@@ -47,8 +47,8 @@ module Metadata
     end
 
     def call(file)
-      metadata = YAML.load_file(file.path) rescue {}
-      metadata = {} if metadata.is_a?(String) # no actual frontmatter found
+      metadata = YAML.load_file(file.path) rescue false
+      metadata = {} if metadata == false || metadata.is_a?(String) # no actual frontmatter found
       unless metadata.empty?
         re = '^---[[:space:]]*$'
         content = @sh.run_command('sed', '-En', "1,/#{re}/{ /#{re}/!d; }; p", file.path, :|, 'sed', '-E', "/#{re}/,/#{re}/d")
