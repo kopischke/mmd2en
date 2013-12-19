@@ -1,3 +1,5 @@
 *.platypus
 build/
 docs/wiki/
+test/content/
+
