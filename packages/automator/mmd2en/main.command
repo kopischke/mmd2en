@@ -59,7 +59,7 @@ sources.map(&:dump!).each do |source|
     # Let MMD create a HTML output file:
     html = Tempfile.new([TMP, '.html'])
     html.close
-    mmd.convert_file(source, output_file: html)
+    mmd.convert_file(source, output_file: html, full_document: true)
 
     # Create Evernote note from HTML output file (in default notebook, with current date as title):
     new_note  = 'newNote'

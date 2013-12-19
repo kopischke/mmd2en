@@ -60,10 +60,11 @@ class MultiMarkdownParser
     metadata
   end
 
-  def convert_file(markdown_file, to_format: :html, output_file: nil)
+  def convert_file(markdown_file, to_format: :html, output_file: nil, full_document: false)
     opts = []
     opts.push('-t', String(to_format).downcase) if to_format
     opts.push('-o', output_file.path)           if output_file
+    opts.push('-f')                             if full_document == true
     @sh.run_command(bin, *opts, markdown_file.path)
   end
 
