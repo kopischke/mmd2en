@@ -17,6 +17,7 @@
     * File types declared by the Service provider app now conform to *public.text* instead of *public.plain-text* (in practice, this means they are considered “Documents”, but not “Text” – Apple reserves this for plain text without markup, which is not true of Markdown. Note this probably has no effect on your Markdown file types, unless the service provider is the only Markdown app you have installed).
   prerelease: true
   author: Martin Kopischke
+  blame: martin@kopischke.net
   date: 2013-12-19 5:30 GMT+1
   commit: d21be1a733f45289ad59b8c9205e89382e624d41
 
@@ -37,6 +38,7 @@
     There is a rudimentary [README](https://github.com/kopischke/mmd2en/blob/beta/README.md) with usage hints on the repo now – please read it carefully if you want to try the beta, there *are* a few gotchas!
   prerelease: true
   author: Martin Kopischke
+  blame: martin@kopischke.net
   date: 2013-12-08 2:30 GMT+1
   commit: d4d05917c75f81e295b1560b24dc8c4f2cd435f2
 
@@ -57,6 +59,7 @@
     Includes a beta OS X Automator action and service built with it. Install both, check the path to your `multimarkdown` in the Action settings of the Service and save as the Service to test note creation from selected MultiMarkdown text. Only selected text for now (no files, that is forthcoming), no instructions yet beyond these.
   prerelease: true
   author: Martin Kopischke
+  blame: martin@kopischke.net
   date: 2013-12-05 1:45 GMT+1
   commit: f87ac6fd52e0ef60155b95ccfa1d82f1c3cf8ca7
 ---

@@ -98,19 +98,19 @@ Rake::MustacheTask.new(CHANGELOG_RSS) do |t|
   rfc822_time  = '%a, %d %b %Y %H:%M:%S %z'
   release_info = YAML.load_file(CHANGELOG_DATA).values.map {|info|
     {
-      title:  "#{info['version']}: #{info['title']}#{ " [prerelease]" if info['prerelease']}",
-      url:    info['url'],
+      title:  "#{info['title']}#{" [prerelease]" if info['prerelease']}",
       desc:   Kramdown::Document.new(info['body']).to_html,
-      author: info['author'],
+      url:    "#{REPO_URL}/releases/tag/#{info['version']}",
+      author: "#{info['blame']} (#{info['author']})",
       date:   DateTime.parse(info['date']).strftime(rfc822_time),
-      uid:    info['commit'],
-      url:    "#{REPO_URL}/releases/tag/#{version}"
+      uid:    info['commit']
     }
   }
   t.data = {
     title:      "#{FULL_NAME} releases",
     homepage:    REPO_URL,
     feed_url:    "http://software.kopischke.net/#{BASE_NAME}/#{CHANGELOG_RSS.pathmap('%f')}",
+    feed_editor: "#{%x{git config --get user.email}.chomp} (#{%x{git config --get user.name}.chomp})",
     description: "All #{FULL_NAME} (#{BASE_NAME}) releases and updates, including prereleases.",
     now:         DateTime.now.strftime(rfc822_time),
     releases:    release_info
@@ -126,16 +126,19 @@ Rake::MustacheTask.new(CHANGELOG) do |t|
   iso8601_time = '%F %H:%M:%S %z'
   release_info = YAML.load_file(CHANGELOG_DATA).values.map {|info|
     {
-      title:  "#{info['version']}: #{info['title']}#{ " [prerelease]" if info['prerelease']}",
-      desc:   info['body'],
-      author: info['author'],
-      date:   DateTime.parse(info['date']).strftime(iso8601_time)
+      title:   "#{info['title']}",
+      desc:    info['body'],
+      url:    "#{REPO_URL}/releases/tag/#{info['version']}",
+      version: "#{info['version']}#{" [prerelease]" if info['prerelease']}",
+      author:  info['author'],
+      date:    DateTime.parse(info['date']).strftime(iso8601_time)
     }
   }
   t.data = {
-    project:     FULL_NAME,
-    now:         DateTime.now.strftime(iso8601_time),
-    releases:    release_info
+    project:  FULL_NAME,
+    now:      DateTime.now.strftime(iso8601_time),
+    me:       %x{git config --get user.name}.chomp,
+    releases: release_info
   }
 end
 
