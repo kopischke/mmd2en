@@ -1,4 +1,5 @@
 *.platypus
+*.app
 build/
 docs/wiki/
 test/content/
