@@ -61,7 +61,7 @@ MMD_BIN        = FileList.new(File.join(MMD_BIN_DIR, 'multimarkdown'), File.join
 PACKAGES       = [APP_BUNDLE, ACTION_BUNDLE]
 PACKAGE_TASKS  = [:app, :automator]
 
-# Changelog
+# Change logs
 CHANGELOG      = File.join(BASE_DIR, 'CHANGELOG.md')
 CHANGELOG_DATA = File.join(DOCS_DIR, 'Changelog.yaml')
 CHANGELOG_MUST = File.join(DOCS_DIR, 'Changelog.md.mustache')
@@ -204,7 +204,7 @@ Rake::OSX::BundleEditorTask.new(:app, APP_BUNDLE) do |t|
   supported_types = YAML.load_file(File.join(File.dirname(APP_TEMPLATE), "#{BASE_NAME}.utis.yaml")).values
   supported_utis  = supported_types.map {|e| e['UTTypeIdentifier'] }
 
-  doc_type   = { # declare MutiMarkdown compatible document handling
+  doc_type   = { # declare MultiMarkdown compatible document handling
     'LSItemContentTypes' => supported_utis,
     'CFBundleTypeRole'   => 'Viewer',
     'LSHandlerRank'      => 'None'
