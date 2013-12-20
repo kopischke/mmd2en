@@ -7,10 +7,11 @@
     <description>All MultiMarkdown → Evernote (mmd2en) releases and updates, including prereleases.</description>
     <category>Software updates</category>
     <language>en</language>
-    <lastBuildDate>Fri, 20 Dec 2013 03:59:23 +0100</lastBuildDate>
+    <lastBuildDate>Fri, 20 Dec 2013 15:46:12 +0100</lastBuildDate>
+    <managingEditor>martin@kopischke.net (Martin Kopischke)</managingEditor>
     <item>
-      <title>2.0.0rc1: Release Candidate 1 [prerelease]</title>
-      <link>https://github.com/kopischke/mmd2en/releases/tag/2.0.0r1</link>
+      <title>Release Candidate 1 [prerelease]</title>
+      <link>https://github.com/kopischke/mmd2en/releases/tag/2.0.0rc1</link>
       <description><![CDATA[<h3 id="changes-since-beta-3">Changes since beta 3</h3>
 
 <p><strong>Bundling joy</strong>: both the Automator action and the service provider application now bundle a <code>multimarkdown</code> binary, removing the dependency on a separate install (user installs will override the bundled binary if they are both newer and located in <em>bash</em>’s <code>$PATH</code>).</p>
@@ -26,13 +27,13 @@
   <li>File types declared by the Service provider app now conform to <em>public.text</em> instead of <em>public.plain-text</em> (in practice, this means they are considered “Documents”, but not “Text” – Apple reserves this for plain text without markup, which is not true of Markdown. Note this probably has no effect on your Markdown file types, unless the service provider is the only Markdown app you have installed).</li>
 </ul>
 ]]></description>
-      <author>Martin Kopischke</author>
+      <author>martin@kopischke.net (Martin Kopischke)</author>
       <pubDate>Thu, 19 Dec 2013 05:30:00 +0100</pubDate>
       <guid isPermaLink="false">d21be1a733f45289ad59b8c9205e89382e624d41</guid>
     </item>
     <item>
-      <title>2.0.0b3: Beta 3: Full Service Edition reloaded [prerelease]</title>
-      <link>https://github.com/kopischke/mmd2en/releases/tag/2.0.0r1</link>
+      <title>Beta 3: Full Service Edition reloaded [prerelease]</title>
+      <link>https://github.com/kopischke/mmd2en/releases/tag/2.0.0b3</link>
       <description><![CDATA[<p><strong>Changes in this beta from beta 1:</strong></p>
 
 <ul>
@@ -49,25 +50,25 @@
 
 <p>There is a rudimentary <a href="https://github.com/kopischke/mmd2en/blob/beta/README.md">README</a> with usage hints on the repo now – please read it carefully if you want to try the beta, there <em>are</em> a few gotchas!</p>
 ]]></description>
-      <author>Martin Kopischke</author>
+      <author>martin@kopischke.net (Martin Kopischke)</author>
       <pubDate>Sun, 08 Dec 2013 02:30:00 +0100</pubDate>
       <guid isPermaLink="false">d4d05917c75f81e295b1560b24dc8c4f2cd435f2</guid>
     </item>
     <item>
-      <title>2.0.0b2: Beta 2: Full Service Edition [prerelease]</title>
-      <link>https://github.com/kopischke/mmd2en/releases/tag/2.0.0r1</link>
+      <title>Beta 2: Full Service Edition [prerelease]</title>
+      <link>https://github.com/kopischke/mmd2en/releases/tag/2.0.0b2</link>
       <description><![CDATA[<p>Beta has been pulled as the build is broken. Wait for beta 3.</p>
 ]]></description>
-      <author>Martin Kopischke</author>
+      <author> (Martin Kopischke)</author>
       <pubDate>Fri, 06 Dec 2013 03:15:00 +0100</pubDate>
       <guid isPermaLink="false">42dc92fff1121c97fa9501efe8151bd86549c908</guid>
     </item>
     <item>
-      <title>2.0.0b1: First beta release [prerelease]</title>
-      <link>https://github.com/kopischke/mmd2en/releases/tag/2.0.0r1</link>
+      <title>First beta release [prerelease]</title>
+      <link>https://github.com/kopischke/mmd2en/releases/tag/2.0.0b1</link>
       <description><![CDATA[<p>Includes a beta OS X Automator action and service built with it. Install both, check the path to your <code>multimarkdown</code> in the Action settings of the Service and save as the Service to test note creation from selected MultiMarkdown text. Only selected text for now (no files, that is forthcoming), no instructions yet beyond these.</p>
 ]]></description>
-      <author>Martin Kopischke</author>
+      <author>martin@kopischke.net (Martin Kopischke)</author>
       <pubDate>Thu, 05 Dec 2013 01:45:00 +0100</pubDate>
       <guid isPermaLink="false">f87ac6fd52e0ef60155b95ccfa1d82f1c3cf8ca7</guid>
     </item>
