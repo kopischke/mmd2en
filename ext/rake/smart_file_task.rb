@@ -24,7 +24,7 @@ module Rake
 
     def initialize(target = nil, base = nil, action = nil, named_task_info: nil, group_task_info: nil, verbose: false)
       @target    = target
-      @base      = base
+      @base      = Array(base)
       @action    = action
       named_task = named_task_info
       group_task = group_task_info
@@ -52,7 +52,8 @@ module Rake
   private
     def task_name(task_info)
       task_name = task_info.is_a?(Hash) ? task_info.keys.first : task_info
-      String(task_name).strip.downcase.to_sym[/^.+$/]
+      task_name = String(task_name).strip.downcase[/^.+$/]
+      task_name.to_sym unless task_name.nil?
     end
 
     def task_desc(task_info)
@@ -81,7 +82,7 @@ module Rake
 
       # :@group_task multitask (if provided)
       unless group.nil?
-        @@tasks[group] << @named_task.nil? ? @target : @named_task.keys.first
+        @@tasks[group] << (@named_task.nil? ? @target : @named_task.keys.first)
         desc @group_task.values.first unless @group_task.values.first.nil?
         multitask @group_task.keys.first => tasks
       end
