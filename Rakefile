@@ -20,8 +20,9 @@ end
 
 # CONSTANTS
 # ---------
-BASE_NAME     = 'mmd2en'
-FULL_NAME     = 'MultiMarkdown → Evernote'
+VERBOSE        = true
+BASE_NAME      = 'mmd2en'
+FULL_NAME      = 'MultiMarkdown → Evernote'
 
 # Build system directory structure
 BASE_DIR      = File.join(File.expand_path(File.dirname(__FILE__)))
@@ -69,7 +70,7 @@ CLOBBER.include(File.join(BUILD_DIR, '*'))
 Rake::TestTask.new do |t|
   t.libs.push 'lib'
   t.test_files = FileList['test/*_test.rb']
-  t.verbose    = true
+  t.verbose    = VERBOSE
 end
 
 # rake version[:...]
@@ -80,7 +81,7 @@ end
 
 # rake automator[:prepare]
 Rake::SmartFileTask.new(ACTION_SCRIPT, MAIN_SCRIPT) do |t|
-  t.verbose    = true
+  t.verbose    = VERBOSE
   t.named_task = {:'automator:prepare' => 'Update main script for Automator action.'}
   t.action     = ->(*_) {
     # Generate main.command and make executable (Action will fail if the script is not x!)
@@ -91,7 +92,7 @@ Rake::SmartFileTask.new(ACTION_SCRIPT, MAIN_SCRIPT) do |t|
 end
 
 Rake::SmartFileTask.new(ACTION_BUNDLE, [ACTION_SCRIPT, *LIB_SCRIPTS, ACTION_XCODE]) do |t|
-  t.verbose = true
+  t.verbose = VERBOSE
   t.action  = ->(*_) {
     build_env   = {'CONFIGURATION_BUILD_DIR' => BUILD_DIR.shellescape}.map {|k,v| "#{k}=#{v}" }.join(' ')
     project_dir = ACTION_XCODE.pathmap('%d').shellescape
@@ -101,7 +102,7 @@ end
 
 Rake::OSX::BundleEditorTask.new(:automator, ACTION_BUNDLE) do |t|
   t.description = 'Generate Automator action.'
-  t.verbose     = true
+  t.verbose     = VERBOSE
   t.set_version = version.to_friendly
   t.set_build   = version.to_s
 end
@@ -109,7 +110,7 @@ end
 # rake platypus
 Rake::MustacheTask.new(APP_TEMPLATE) do |t|
   t.named_task = {platypus: 'Generate Platypus template for OS X Service provider application'}
-  t.verbose    = true
+  t.verbose    = VERBOSE
   t.data       = {
     name:     FULL_NAME,
     id:       APP_BUNDLE_ID,
@@ -123,7 +124,7 @@ end
 
 # rake app
 Rake::SmartFileTask.new(APP_BUNDLE) do |t|
-  t.verbose = true
+  t.verbose = VERBOSE
   t.base    = [*ALL_SCRIPTS, APP_TEMPLATE, APP_SCRIPT, *APP_YAML_DATA, *MMD_BIN, BUILD_DIR]
   t.action  = ->(*_){
     FileUtils.rm_r(APP_BUNDLE) if File.exist?(APP_BUNDLE) # Platypus’ overwrite flag `-y` is a noop as of 4.8
@@ -136,7 +137,7 @@ end
 
 Rake::OSX::BundleEditorTask.new(:app, APP_BUNDLE) do |t|
   t.description = 'Generate OS X Service provider application.'
-  t.verbose     = true
+  t.verbose     = VERBOSE
   t.set_version = version.to_friendly
   t.set_build   = version.to_s
 
@@ -174,7 +175,7 @@ task :build => [:clobber, *PACKAGE_TASKS]
 # rake zip
 Rake::ZipTask.new(File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}")) do |t|
   t.named_task = {zip: 'Zip all packages for upload to GitHub.'}
-  t.verbose    = true
+  t.verbose    = VERBOSE
   t.files      = PACKAGES
   t.base       = PACKAGE_TASKS # depending on the files skips bundle editing
 end
