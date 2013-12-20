@@ -37,7 +37,7 @@ DOCS_DIR       = File.join(BASE_DIR, 'docs')
 # Core scripts
 MAIN_SCRIPT    = File.join(BASE_DIR, "#{BASE_NAME}.rb")
 LIB_SCRIPTS    = FileList.new(File.join(LIB_DIR, '*.rb'))
-ALL_SCRIPTS    = LIB_SCRIPTS.dup.push(MAIN_SCRIPT)
+ALL_SCRIPTS    = LIB_SCRIPTS.dup.include(MAIN_SCRIPT)
 
 # Service provider app
 APP_BUNDLE     = File.join(BUILD_DIR, "#{FULL_NAME}.app")
