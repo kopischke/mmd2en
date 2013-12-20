@@ -3,8 +3,8 @@ require 'rake/smart_file_task'
 require 'mustache'
 
 module Rake
-  # Rake task to generate files from Mustache templates using
-  # dynamically generated data (as opposed to static YAML data).
+  # Rake task to generate files from Mustache templates using a CLI-like approach
+  # (but without actually using the broken mess the CLI is as of 0.99.5).
   class MustacheTask < SmartFileTask
     attr_accessor :data
     attr_writer   :template
