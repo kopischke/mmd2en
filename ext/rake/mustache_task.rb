@@ -7,7 +7,6 @@ module Rake
   # (but without actually using the broken mess the CLI is as of 0.99.5).
   class MustacheTask < SmartFileTask
     attr_accessor :data
-    attr_writer   :template
 
     # restrict `actions` access to r/o
     protected :action=
@@ -26,6 +25,12 @@ module Rake
 
     def template
       @template ||= "#{@target}.mustache"
+    end
+
+    def template=(template_file)
+      @base = @base.reject {|e| e == @template} unless @template.nil?
+      @template = template_file
+      @base = @base.push(@template)
     end
   end
 end
