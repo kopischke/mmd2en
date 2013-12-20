@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{title}}</title>
+    <link>{{homepage}}</link>
+    <atom:link href="{{feed_url}}" rel="self" type="application/rss+xml" />
+    <description>{{description}}</description>
+    <category>Software updates</category>
+    <language>en</language>
+    <lastBuildDate>{{now}}</lastBuildDate>
+    {{#releases}}
+    <item>
+      <title>{{title}}</title>
+      <link>{{url}}</link>
+      <description><![CDATA[{{{desc}}}]]></description>
+      <author>{{author}}</author>
+      <pubDate>{{date}}</pubDate>
+      <guid isPermaLink="false">{{uid}}</guid>
+    </item>
+    {{/releases}}
+  </channel>
+</rss>

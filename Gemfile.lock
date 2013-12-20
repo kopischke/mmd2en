@@ -2,6 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     CFPropertyList (2.2.4)
+    kramdown (1.3.0)
     minitest (5.0.8)
     minitest-stub-const (0.1)
     mustache (0.99.5)
@@ -13,6 +14,7 @@ PLATFORMS
 
 DEPENDENCIES
   CFPropertyList (~> 2.2)
+  kramdown (~> 1.3)
   minitest (~> 5.0)
   minitest-stub-const (~> 0.1)
   mustache (~> 0.99.5)
