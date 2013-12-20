@@ -1,6 +1,7 @@
 # encoding: UTF-8
 require 'rake/tasklib'
 require 'rake/output'
+require 'rake/task_info'
 
 module Rake
   # Rake task class for smart file generation / processing tasks:
@@ -12,29 +13,26 @@ module Rake
       def tasks;  @@tasks;  end
       def groups; @@groups; end
     end
-    def group;    @group_task.keys.first unless @group_task.nil?; end
-    def tasks;    @@tasks[group]; end
+    def group;    @group_task.name unless @group_task.nil?; end
+    def tasks;    @@tasks.fetch(@group_task.name, []); end
     def defined?; @defined; end
 
-    @@groups ||= Hash.new()
+    @@groups ||= []
     @@tasks  ||= Hash.new([])
 
     # binds `puts` to Rake default output, quiet unless @verbose is set
     include Rake::ReducedOutput
 
     def initialize(target = nil, base = nil, action = nil, named_task_info: nil, group_task_info: nil, verbose: false)
-      @target    = target
-      @base      = Array(base)
-      @action    = action
-      named_task = named_task_info
-      group_task = group_task_info
-      @verbose   = verbose
-      @defined   = false
+      @target         = target
+      @base           = Array(base)
+      @action         = action
+      self.named_task = named_task_info
+      self.group_task = group_task_info
+      @verbose        = verbose
+      @defined        = false
 
       yield(self) if block_given?
-
-      # join differing group descriptions the same way Rake does on multiple definitions
-      @@groups[group] = [@@groups[group], @group_task.values.first].join(' / ') unless group.nil?
 
       # check we have neither empty nor nil requirements
       required = [@target, @base]
@@ -50,18 +48,8 @@ module Rake
     end
 
   private
-    def task_name(task_info)
-      task_name = task_info.is_a?(Hash) ? task_info.keys.first : task_info
-      task_name = String(task_name).strip.downcase[/^.+$/]
-      task_name.to_sym unless task_name.nil?
-    end
-
-    def task_desc(task_info)
-      String(task_info.values.first)[/^.+$/] if task_info.is_a?(Hash)
-    end
-
     def parse_task_info(task_info)
-      {task_name(task_info) => task_desc(task_info)} unless task_info.nil?
+      Rake::TaskInfo.parse(task_info) unless task_info.nil?
     end
 
     def define
@@ -76,15 +64,18 @@ module Rake
 
       # :@named_task task (if provided)
       unless @named_task.nil?
-        desc @named_task.values.first unless @named_task.values.first.nil?
-        task @named_task.keys.first => @target
+        desc @named_task.desc unless @named_task.desc.nil?
+        task @named_task.name => @target
       end
 
-      # :@group_task multitask (if provided)
-      unless group.nil?
-        @@tasks[group] << (@named_task.nil? ? @target : @named_task.keys.first)
-        desc @group_task.values.first unless @group_task.values.first.nil?
-        multitask @group_task.keys.first => tasks
+      # :@group_task task (if provided)
+      unless @group_task.nil?
+        base_task = @named_task.nil? ? @target : @named_task.name
+        desc @group_task.desc unless @group_task.desc.nil?
+        task @group_task.name => base_task
+
+        @@groups << @group_task.name
+        @@tasks[@group_task.name] << base_task
       end
 
       @defined = true
