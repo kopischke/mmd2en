@@ -6,38 +6,32 @@ module Rake
   # (because `zip`, and hence PackageTask, are painful to configure).
   class ZipTask < SmartFileTask
     attr_accessor :files, :move, :recurse, :relative, :exclude
+    protected     :on_run # set by ZipTask
 
     # syntactic sugar
     alias :archive  :target
     alias :archive= :target=
 
-    # restrict `actions` access to r/o
-    protected :action=
-
-    def initialize(archive_file, file_paths = nil, move: false, recurse: true, relative: true, exclude: [], **kwargs, &block)
-      @files    = file_paths
-      @move     = move
-      @recurse  = recurse
-      @relative = relative
-      @exclude  = exclude
-      action = ->(*_){
-        archive_path = "#{@target.shellescape.sub(/\.zip$/i, '')}.zip"
-        @files.sort.each do |path|
+    def initialize(archive_file, *file_paths, &block)
+      self.files = file_paths
+      self.on_run do
+        archive_path = self.target.sub(/(\.zip)?$/i, '.zip').shellescape
+        self.files.sort.each do |path|
           zip_command = [].tap {|cmd|
-            cmd << "cd #{File.dirname(path).shellescape};" if @relative
+            cmd << "cd #{File.dirname(path).shellescape};" if self.relative
             cmd << 'zip'
-            cmd << '-v' if @verbose
-            cmd << '-m' if @move
-            cmd << '-r' if @recurse
+            cmd << '-v' if self.verbose
+            cmd << '-m' if self.move
+            cmd << '-r' if self.recurse
             cmd << archive_path
-            cmd << (@relative ? File.join('.', path.pathmap('%f')) : path).shellescape
-            cmd << '-x' << @exclude unless @exclude.empty?
+            cmd << (self.relative ? File.join('.', path.pathmap('%f')) : path).shellescape
+            cmd << '-x' << self.exclude unless self.exclude.empty?
           }.flatten
           %x{#{zip_command.join(' ')}}
-          fail "Error generating package archive '#{@target}': `zip` returned #{$?.exitstatus}" unless $?.exitstatus == 0
+          fail "Error generating package archive '#{self.target}': `zip` returned #{$?.exitstatus}" unless $?.exitstatus == 0
         end
-      }
-      super(archive_file, @files, action, **kwargs, &block)
+      end
+      super(archive_file, files, &block)
     end
   end
 end
