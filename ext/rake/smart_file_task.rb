@@ -74,8 +74,8 @@ module Rake
         desc @group_task.desc unless @group_task.desc.nil?
         task @group_task.name => base_task
 
-        @@groups << @group_task.name
         @@tasks[@group_task.name] << base_task
+        @@groups << @group_task.name unless @@groups.include?(@group_task.name)
       end
 
       @defined = true
