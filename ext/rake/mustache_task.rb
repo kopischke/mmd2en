@@ -11,6 +11,7 @@ module Rake
 
     def initialize(target, template_file: nil, data: nil, &block)
       @target       = target
+      @data         = data
       self.template = template_file
       self.on_run do
         puts "Rendering Mustache template '#{self.template.pathmap('%f')}' to '#{self.target.pathmap('%f')}'..."
