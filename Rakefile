@@ -93,7 +93,7 @@ end
 # rake changelog
 Rake::MustacheTask.new(CHANGELOG_RSS) do |t|
   t.verbose    = VERBOSE
-  t.group_task = {changelog: 'Generate all changelog files.'}
+  t.group_task = {changelog: 'Generate all change log files.'}
   t.deps      |= [CHANGELOG_DATA]
 
   rfc822_time  = '%a, %d %b %Y %H:%M:%S %z'
@@ -244,5 +244,4 @@ Rake::ZipTask.new(File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}"), *PAC
   t.verbose    = VERBOSE
 end
 
-desc 'Test and build.'
 task :default => [:test, :build]
