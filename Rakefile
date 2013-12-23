@@ -254,8 +254,8 @@ Rake::Task[APP_BUNDLE].enhance do # edit Info.plist and re-register app
     data
   end
 
-  OSX::LaunchServices.register(APP_BUNDLE, lint: true, verbose: @verbose)
-  OSX::Services.reload!(verbose: @verbose)
+  OSX::LaunchServices.register(APP_BUNDLE, lint: true, verbose: VERBOSE)
+  OSX::Services.reload!(verbose: VERBOSE)
 end
 
 # rake build:force
