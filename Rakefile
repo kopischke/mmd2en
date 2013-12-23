@@ -4,9 +4,11 @@ $:.push File.join(File.dirname(__FILE__), 'ext')
 require 'bundler/setup'
 require 'date'
 require 'kramdown'
+require 'osx/bundle'
+require 'osx/launch_services'
+require 'osx/services'
 require 'rake/clean'
 require 'rake/mustache_task'
-require 'rake/osx/bundle_editor_task'
 require 'rake/testtask'
 require 'rake/version_task'
 require 'rake/zip_task'
@@ -166,11 +168,10 @@ Rake::SmartFileTask.new(ACTION_BUNDLE, ACTION_SCRIPT, *LIB_SCRIPTS, ACTION_XCODE
   end
 end
 
-Rake::OSX::BundleEditorTask.new(:automator, ACTION_BUNDLE) do |t|
-  t.description = 'Generate Automator action.'
-  t.verbose     = VERBOSE
-  t.set_version = version.to_friendly
-  t.set_build   = version.to_s
+Rake::Task[ACTION_BUNDLE].enhance do # update version info
+  OSX::Bundle.new(ACTION_BUNDLE).info do |data|
+    data.merge({'CFBundleVersion' => version.to_s, 'CFBundleShortVersionString' => version.to_friendly})
+  end
 end
 
 # rake platypus
@@ -202,12 +203,7 @@ Rake::SmartFileTask.new(APP_BUNDLE) do |t|
   end
 end
 
-Rake::OSX::BundleEditorTask.new(:app, APP_BUNDLE) do |t|
-  t.description = 'Generate OS X Service provider application.'
-  t.verbose     = VERBOSE
-  t.set_version = version.to_friendly
-  t.set_build   = version.to_s
-
+Rake::Task[APP_BUNDLE].enhance do # edit Info.plist and re-register app
   supported_types = YAML.load_file(File.join(File.dirname(APP_TEMPLATE), "#{BASE_NAME}.utis.yaml")).values
   supported_utis  = supported_types.map {|e| e['UTTypeIdentifier'] }
 
@@ -217,6 +213,7 @@ Rake::OSX::BundleEditorTask.new(:app, APP_BUNDLE) do |t|
     'LSHandlerRank'      => 'None'
   }
   app_info   = { # Info.plist root
+    'CFBundleShortVersionString' => version.to_friendly, # build is set in Platypus template
     'CFBundleDocumentTypes'      => [doc_type],          # override handled file types
     'UTImportedTypeDeclarations' => supported_types,     # import supported UTIs
     'LSMinimumSystemVersion'     => '10.9.0'             # minimum for system Ruby 2
@@ -228,16 +225,19 @@ Rake::OSX::BundleEditorTask.new(:app, APP_BUNDLE) do |t|
     'NSSendTypes'       => ['NSStringPboardType']
   }
 
-  t.edit_info = ->(data){
+  OSX::Bundle.new(APP_BUNDLE).info do |data|
     data.merge!(app_info)
     data['NSServices'] = [data.fetch('NSServices', [{}])[0].merge(ns_services)]
     data
-  }
+  end
+
+  OSX::LaunchServices.register(APP_BUNDLE, lint: true, verbose: @verbose)
+  OSX::Services.reload!(verbose: @verbose)
 end
 
-# rake build
-desc 'Build all packages.'
-task :build => [:clobber, *PACKAGE_TASKS]
+# rake build:force
+desc 'Force rebuild all packages.'
+task :'build:force' => [:clobber, PACKAGES]
 
 # rake zip
 Rake::ZipTask.new(File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}"), *PACKAGES) do |t|
