@@ -61,7 +61,6 @@ MMD_BIN        = FileList.new(File.join(MMD_BIN_DIR, 'multimarkdown'), File.join
 
 # Package upload contents
 PACKAGES       = [APP_BUNDLE, ACTION_BUNDLE]
-PACKAGE_TASKS  = [:app, :automator]
 
 # Change logs
 CHANGELOG      = File.join(BASE_DIR, 'CHANGELOG.md')
@@ -243,7 +242,6 @@ task :'build:force' => [:clobber, PACKAGES]
 Rake::ZipTask.new(File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}"), *PACKAGES) do |t|
   t.named_task = {zip: 'Zip all packages for upload to GitHub.'}
   t.verbose    = VERBOSE
-  t.deps       = PACKAGE_TASKS # depending on the files skips bundle editing
 end
 
 desc 'Test and build.'
