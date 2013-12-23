@@ -8,6 +8,7 @@ require 'osx/bundle'
 require 'osx/launch_services'
 require 'osx/services'
 require 'rake/clean'
+require 'rake/git_changelog_task'
 require 'rake/mustache_task'
 require 'rake/testtask'
 require 'rake/version_task'
@@ -24,10 +25,13 @@ end
 
 # CONSTANTS
 # ---------
-VERBOSE        = true
 BASE_NAME      = 'mmd2en'
 FULL_NAME      = 'MultiMarkdown → Evernote'
 REPO_URL       = 'https://github.com/kopischke/mmd2en'
+
+# Build system configuration
+VERBOSE        = true
+RELEASE_TAGS   = true
 
 # Build system directory structure
 BASE_DIR       = File.join(File.expand_path(File.dirname(__FILE__)))
@@ -87,13 +91,33 @@ end
 # rake version[:...]
 Rake::VersionTask.new do |t|
 	t.with_git     = true
-	t.with_git_tag = true
+	t.with_git_tag = RELEASE_TAGS
+end
+
+[ # hook master change log update to version bump tasks
+  :'version:bump',
+  :'version:bump:major',
+  :'version:bump:minor',
+  :'version:bump:pre',
+  :'version:bump:pre:major',
+  :'version:bump:pre:minor',
+  :'version:bump:pre:revision',
+  :'version:bump:revision'
+].each do |t|
+  Rake::Task[t].enhance do Rake::Task[CHANGELOG_DATA].invoke end
 end
 
 # rake changelog
+Rake::GitChangelogTask.new(CHANGELOG_DATA) do |t|
+  t.verbose    = VERBOSE
+  t.with_tags  = RELEASE_TAGS
+  t.format     = '* %s'
+end
+
+# rake changelog:process
 Rake::MustacheTask.new(CHANGELOG_RSS) do |t|
   t.verbose    = VERBOSE
-  t.group_task = {changelog: 'Generate all change log files.'}
+  t.group_task = {:'changelog:process' => 'Generate all release note files.'}
   t.deps      |= [CHANGELOG_DATA]
 
   rfc822_time  = '%a, %d %b %Y %H:%M:%S %z'
@@ -120,7 +144,7 @@ end
 
 Rake::MustacheTask.new(CHANGELOG) do |t|
   t.verbose    = VERBOSE
-  t.group_task = :changelog
+  t.group_task = :'changelog:process'
   t.template   = CHANGELOG_MUST
   t.deps      |= [CHANGELOG_DATA]
 
