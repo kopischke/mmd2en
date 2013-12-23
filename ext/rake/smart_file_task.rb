@@ -7,15 +7,17 @@ module Rake
   # Rake task class for smart file generation / processing tasks:
   # auto-target dir creation, optional named task alias, optional named group task.
   class SmartFileTask < TaskLib
-    attr_accessor :target, :base, :action, :verbose
-    attr_reader   :named_task, :group_task
+    attr_accessor :target, :verbose
+    attr_reader   :deps, :named_task, :group_task
+
+    def group;    @group_task.name unless @group_task.nil?; end
+    def tasks;    @@tasks.fetch(@group_task.name, []); end
+    def defined?; @defined; end
+
     class << self
       def tasks;  @@tasks;  end
       def groups; @@groups; end
     end
-    def group;    @group_task.name unless @group_task.nil?; end
-    def tasks;    @@tasks.fetch(@group_task.name, []); end
-    def defined?; @defined; end
 
     @@groups ||= []
     @@tasks  ||= Hash.new([])
@@ -23,20 +25,21 @@ module Rake
     # binds `puts` to Rake default output, quiet unless @verbose is set
     include Rake::ReducedOutput
 
-    def initialize(target = nil, base = nil, action = nil, named_task_info: nil, group_task_info: nil, verbose: false)
-      @target         = target
-      @base           = Array(base)
-      @action         = action
-      self.named_task = named_task_info
-      self.group_task = group_task_info
-      @verbose        = verbose
-      @defined        = false
-
+    def initialize(target, *dependencies)
+      @target   = target
+      @deps     = dependencies
+      @defined  = false
       yield(self) if block_given?
-
-      # check we have neither empty nor nil requirements
-      required = [@target, @base]
+      required = [@target, @deps]
       define unless required.reject {|e| e.nil? || e.empty? }.count != required.count || @action.nil?
+    end
+
+    def deps=(dependencies)
+      @deps = Array(dependencies)
+    end
+
+    def on_run(*args, &block)
+      @action = [block, args]
     end
 
     def named_task=(task_info)
@@ -58,8 +61,8 @@ module Rake
       directory target_dir
 
       # file task for @target creation
-      file @target => [*@base, target_dir] do
-        @action.call(self)
+      file @target => [*@deps, target_dir] do
+        self.instance_exec(@action[1], &@action[0])
       end
 
       # :@named_task task (if provided)
