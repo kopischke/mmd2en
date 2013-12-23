@@ -5,7 +5,8 @@ module Rake
   # Rake task to generate ZIP archives wrapping the `zip` utility
   # (because `zip`, and hence PackageTask, are painful to configure).
   class ZipTask < SmartFileTask
-    attr_accessor :files, :move, :recurse, :relative, :exclude
+    attr_accessor :move, :recurse, :relative, :exclude
+    attr_reader   :files
     protected     :on_run # set by ZipTask
 
     # syntactic sugar
@@ -32,6 +33,12 @@ module Rake
         end
       end
       super(archive_file, files, &block)
+    end
+
+    def files=(file_paths)
+      @deps and @deps.reject! {|e| @files.include?(e) }
+      @files = Array(file_paths)
+      @deps |= @files
     end
   end
 end
