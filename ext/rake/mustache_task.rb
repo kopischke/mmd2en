@@ -21,13 +21,13 @@ module Rake
     end
 
     def template
-      @template ||= "#{@target}.mustache"
+      @template || "#{@target}.mustache" unless @target.nil?
     end
 
     def template=(template_file)
-      @base = @base.reject {|e| e == @template} unless @template.nil?
+      @deps and @deps.reject! {|e| e == self.template }
       @template = template_file
-      @base = @base.push(@template)
+      @deps    |= [self.template]
     end
   end
 end
