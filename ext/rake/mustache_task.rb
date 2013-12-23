@@ -7,20 +7,17 @@ module Rake
   # (but without actually using the broken mess the CLI is as of 0.99.5).
   class MustacheTask < SmartFileTask
     attr_accessor :data
+    protected     :on_run # set by MustacheTask
 
-    # restrict `actions` access to r/o
-    protected :action=
-
-    def initialize(target, template_file: nil, data: nil, **kwargs, &block)
-      @target   = target
-      @template = template_file
-      @data     = data
-      action    = ->(*_){
-        puts "Rendering Mustache template '#{template.pathmap('%f')}' to '#{@target.pathmap('%f')}'..."
-        Mustache.template_file = template
-        File.write(@target, Mustache.render(@data.respond_to?(:call) ? @data.call(self) : @data))
-      }
-      super(target, template, action, **kwargs, &block)
+    def initialize(target, template_file: nil, data: nil, &block)
+      @target       = target
+      self.template = template_file
+      self.on_run do
+        puts "Rendering Mustache template '#{self.template.pathmap('%f')}' to '#{self.target.pathmap('%f')}'..."
+        Mustache.template_file = self.template
+        File.write(self.target, Mustache.render(self.data.respond_to?(:call) ? self.data.call(self) : self.data))
+      end
+      super(target, template, &block)
     end
 
     def template
