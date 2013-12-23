@@ -169,7 +169,7 @@ end
 
 Rake::Task[ACTION_BUNDLE].enhance do # update version info
   OSX::Bundle.new(ACTION_BUNDLE).info do |data|
-    data.merge({'CFBundleVersion' => version.to_s, 'CFBundleShortVersionString' => version.to_friendly})
+    data.merge({'CFBundleVersion' => version.to_short, 'CFBundleShortVersionString' => version.to_friendly})
   end
 end
 
@@ -183,7 +183,7 @@ Rake::MustacheTask.new(APP_TEMPLATE) do |t|
     includes: [MAIN_SCRIPT, "#{LIB_DIR}#{File::SEPARATOR}", "#{MMD_BIN_DIR}#{File::SEPARATOR}"].map {|e| {path: e} },
     icon:     File.join(APP_DIR, "#{BASE_NAME}.icns"),
     script:   APP_SCRIPT,
-    version:  version.to_s,
+    version:  version.to_short,
     platypus: '/usr/local/share/platypus'
   }
 end
