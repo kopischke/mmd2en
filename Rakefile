@@ -93,7 +93,7 @@ end
 Rake::MustacheTask.new(CHANGELOG_RSS) do |t|
   t.verbose    = VERBOSE
   t.group_task = {changelog: 'Generate all changelog files.'}
-  t.base       = t.base.push(CHANGELOG_DATA)
+  t.deps      |= [CHANGELOG_DATA]
 
   rfc822_time  = '%a, %d %b %Y %H:%M:%S %z'
   release_info = YAML.load_file(CHANGELOG_DATA).values.map {|info|
@@ -121,7 +121,7 @@ Rake::MustacheTask.new(CHANGELOG) do |t|
   t.verbose    = VERBOSE
   t.group_task = :changelog
   t.template   = CHANGELOG_MUST
-  t.base       = t.base.push(CHANGELOG_DATA)
+  t.deps      |= [CHANGELOG_DATA]
 
   iso8601_time = '%F %H:%M:%S %z'
   release_info = YAML.load_file(CHANGELOG_DATA).values.map {|info|
@@ -142,25 +142,28 @@ Rake::MustacheTask.new(CHANGELOG) do |t|
   }
 end
 
-# rake automator[:prepare]
+# rake automator:prepare
 Rake::SmartFileTask.new(ACTION_SCRIPT, MAIN_SCRIPT) do |t|
   t.verbose    = VERBOSE
   t.named_task = {:'automator:prepare' => 'Update main script for Automator action.'}
-  t.action     = ->(*_) {
+  t.on_run do
     # Generate main.command and make executable (Action will fail if the script is not x!)
-    main_script = ACTION_SCRIPT.shellescape
-    %x{echo '#!/usr/bin/ruby -KuW0' | cat - #{MAIN_SCRIPT.shellescape} > #{main_script} && chmod +x #{main_script}}
-    fail "Generation of '#{ACTION_SCRIPT}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
-  }
+    action_script = self.target.shellescape
+    %x{echo '#!/usr/bin/ruby -KuW0' | cat - #{MAIN_SCRIPT.shellescape} > #{action_script} && chmod +x #{action_script}}
+    fail "Generation of '#{self.target}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
+  end
 end
 
-Rake::SmartFileTask.new(ACTION_BUNDLE, [ACTION_SCRIPT, *LIB_SCRIPTS, ACTION_XCODE]) do |t|
-  t.verbose = VERBOSE
-  t.action  = ->(*_) {
+#  rake automator [rake build]
+Rake::SmartFileTask.new(ACTION_BUNDLE, ACTION_SCRIPT, *LIB_SCRIPTS, ACTION_XCODE) do |t|
+  t.named_task = {automator: 'Generate Automator action.'}
+  t.group_task = {build:     'Build all packages.'}
+  t.verbose    = VERBOSE
+  t.on_run do
     build_env   = {'CONFIGURATION_BUILD_DIR' => BUILD_DIR.shellescape}.map {|k,v| "#{k}=#{v}" }.join(' ')
     project_dir = ACTION_XCODE.pathmap('%d').shellescape
     %x{cd #{project_dir}; xcodebuild -scheme '#{BASE_NAME}' -configuration 'Release' #{build_env}}
-  }
+  end
 end
 
 Rake::OSX::BundleEditorTask.new(:automator, ACTION_BUNDLE) do |t|
@@ -185,17 +188,18 @@ Rake::MustacheTask.new(APP_TEMPLATE) do |t|
   }
 end
 
-# rake app
+# rake app [rake build]
 Rake::SmartFileTask.new(APP_BUNDLE) do |t|
-  t.verbose = VERBOSE
-  t.base    = [*ALL_SCRIPTS, APP_TEMPLATE, APP_SCRIPT, *APP_YAML_DATA, *MMD_BIN, BUILD_DIR]
-  t.action  = ->(*_){
-    FileUtils.rm_r(APP_BUNDLE) if File.exist?(APP_BUNDLE) # Platypus’ overwrite flag `-y` is a noop as of 4.8
+  t.named_task = {app:   'Generate OS X Service provider application.'}
+  t.group_task = :build
+  t.verbose    = VERBOSE
+  t.deps       = [*ALL_SCRIPTS, APP_TEMPLATE, APP_SCRIPT, *APP_YAML_DATA, *MMD_BIN, BUILD_DIR]
+  t.on_run do
+    FileUtils.rm_r(self.target) if File.exist?(self.target) # Platypus’ overwrite flag `-y` is a noop as of 4.8
     puts "Generating app bundle from Platypus template '#{APP_TEMPLATE.pathmap('%f')}'."
-    p APP_BUNDLE_ID
-    %x{/usr/local/bin/platypus -l -P #{APP_TEMPLATE.shellescape} #{APP_BUNDLE.shellescape}}
-    fail "Error generating '#{bundle.pathmap('%f')}': `platypus` returned #{$?.exitstatus}." unless $?.exitstatus == 0
-  }
+    %x{/usr/local/bin/platypus -l -P #{APP_TEMPLATE.shellescape} #{self.target.shellescape}}
+    fail "Error generating '#{self.target.pathmap('%f')}': `platypus` returned #{$?.exitstatus}." unless $?.exitstatus == 0
+  end
 end
 
 Rake::OSX::BundleEditorTask.new(:app, APP_BUNDLE) do |t|
@@ -236,11 +240,10 @@ desc 'Build all packages.'
 task :build => [:clobber, *PACKAGE_TASKS]
 
 # rake zip
-Rake::ZipTask.new(File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}")) do |t|
+Rake::ZipTask.new(File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}"), *PACKAGES) do |t|
   t.named_task = {zip: 'Zip all packages for upload to GitHub.'}
   t.verbose    = VERBOSE
-  t.files      = PACKAGES
-  t.base       = PACKAGE_TASKS # depending on the files skips bundle editing
+  t.deps       = PACKAGE_TASKS # depending on the files skips bundle editing
 end
 
 desc 'Test and build.'
