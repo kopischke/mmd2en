@@ -37,9 +37,11 @@ module Rake
           releases.each.with_index do |r, i|
             puts "Gathering git commit data for release: #{r}"
             if @with_tags == true
-              range = "#{i > 0 ? releases[i-1].shellescape : logged.keys.first.shellescape}..#{r.shellescape}"
+              start = i > 0 ? releases[i-1] : logged.keys.first
+              range = "#{start.shellescape << '..' unless start.nil?}#{r.shellescape}"
             else
-              range = "#{logged[logged.keys.first]['commit']}..HEAD"
+              start = logged.keys.first and logged.keys.first['commit']
+              range = "#{start << '..' unless start.nil?}HEAD"
             end
             r_data  = %x{git log -1 --format='%H%n%aN%n%aE%n%ai' #{range}}.chomp.split($/)
 
