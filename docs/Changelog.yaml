@@ -18,7 +18,7 @@
   prerelease: true
   author: Martin Kopischke
   blame: martin@kopischke.net
-  date: 2013-12-19 5:30 GMT+1
+  date: '2013-12-19 05:26:59 +0100'
   commit: d21be1a733f45289ad59b8c9205e89382e624d41
 
 2.0.0b3:
@@ -39,7 +39,7 @@
   prerelease: true
   author: Martin Kopischke
   blame: martin@kopischke.net
-  date: 2013-12-08 2:30 GMT+1
+  date: '2013-12-08 04:57:58 +0100'
   commit: d4d05917c75f81e295b1560b24dc8c4f2cd435f2
 
 2.0.0b2:
@@ -49,7 +49,7 @@
     Beta has been pulled as the build is broken. Wait for beta 3.
   prerelease: true
   author: Martin Kopischke
-  date: 2013-12-06 3:15 GMT+1
+  date: '2013-12-06 00:18:23 +0100'
   commit: 42dc92fff1121c97fa9501efe8151bd86549c908
 
 2.0.0b1:
@@ -60,6 +60,6 @@
   prerelease: true
   author: Martin Kopischke
   blame: martin@kopischke.net
-  date: 2013-12-05 1:45 GMT+1
+  date: '2013-12-05 05:50:34 +0100'
   commit: f87ac6fd52e0ef60155b95ccfa1d82f1c3cf8ca7
 ---
