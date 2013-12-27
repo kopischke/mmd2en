@@ -58,7 +58,7 @@ module Metadata
     end
   end
 
-   # Legacy pseudo MultiMarkdown metadata: replace by MMD conforming metadata keys.
+  # Legacy pseudo MultiMarkdown metadata: replace by MMD conforming metadata keys.
   class LegacyFrontmatterProcessor < Processor
     def call(file)
       content = @sh.run_command('sed', '-E', '1,/^[[:space:]]*$/{
