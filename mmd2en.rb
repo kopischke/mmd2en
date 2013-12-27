@@ -8,7 +8,7 @@ require_relative 'lib/edam'
 require_relative 'lib/metadata'
 require_relative 'lib/mmd'
 
-sources = ARGF.to_files
+sources = ARGF.to_files(guess_file_encoding: true, internal_encoding: Encoding::UTF_8)
 sources.empty? and exit
 
 # Set up MMD parser and Tempfile key
@@ -50,7 +50,7 @@ writers = {
   /^attach(ments|ed( (documents|files))?)?$/i   => files_writer
 }
 
-sources.map(&:dump!).each do |source|
+sources.map{|s| s.dump!(external_encoding: Encoding::UTF_8) }.each do |source|
   begin
     # Get merged metadata from parser queue:
     metadata = processors.compile(source)
