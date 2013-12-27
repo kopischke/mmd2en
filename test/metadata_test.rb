@@ -168,6 +168,43 @@ class TestLegacyFrontmatterProcessor < Minitest::Test
   end
 end
 
+class TestSpotlightPropertiesProcessor < Minitest::Test
+  def setup
+    @file  = File.new(__FILE__)
+  end
+
+  def teardown
+    @file.close
+  end
+
+  def test_retrieves_a_hash_of_values_indexed_on_keys
+    keys   = {name: 'kMDItemFSName', type: 'kMDItemContentType'}
+    values = Metadata::SpotlightPropertiesProcessor.new(**keys).call(@file)
+    assert_instance_of Hash, values
+    assert_equal keys.keys,  values.keys
+  end
+
+  def test_retrieves_and_merges_scalar_data_points
+    values = Metadata::SpotlightPropertiesProcessor.new(name: 'kMDItemFSName').call(@file)
+    assert_instance_of String, values[:name]
+    assert_equal File.basename(@file.path), values[:name]
+
+    values = Metadata::SpotlightPropertiesProcessor.new(type: ['kMDItemContentType', 'kMDItemKind']).call(@file)
+    assert_instance_of Array, values[:type]
+    assert_equal values[:type].compact.uniq.count, values[:type].count
+  end
+
+  def test_retrieves_and_merges_array_data_points
+    single = Metadata::SpotlightPropertiesProcessor.new(tree: 'kMDItemContentTypeTree').call(@file)
+    assert_instance_of Array, single[:tree]
+    assert_equal single[:tree].compact.uniq.count, single[:tree].count
+
+    double = Metadata::SpotlightPropertiesProcessor.new(tree: ['kMDItemContentTypeTree', 'kMDItemContentTypeTree']).call(@file)
+    assert_instance_of Array, double[:tree]
+    assert_equal single, double
+  end
+end
+
 class TestNotePath < Minitest::Test
   def setup
     @notebook  = 'Default Notebook'

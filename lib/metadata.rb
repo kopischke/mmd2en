@@ -71,6 +71,32 @@ module Metadata
     end
   end
 
+  # Spotlight properties processor: extract given keys.
+  class SpotlightPropertiesProcessor < Processor
+    def initialize(**keys)
+      keys or fail ArgumentError, "No Spotlight keys given for #{self.class.name}."
+      @keys = keys
+      super()
+    end
+
+    def call(file)
+      {}.tap {|hash|
+        @keys.each {|metadata_key, spotlight_keys|
+          metadata_for_key = Array(spotlight_keys).map {|key|
+            out = @sh.run_command('mdls', '-raw', '-name', key, file.path)
+            @sh.ok? or fail "Unable to collect '#{key}' data: `mdls` exited with status #{@sh.exitstatus}."
+            out = out.lines.map {|l| l.strip.gsub(/(^[("]|[")],?$)/, '')[/^.+$/] }.compact
+            out.count > 1 ? out : out.first
+          }.flatten.compact.uniq
+
+          unless metadata_for_key.empty?
+            hash[metadata_key] = metadata_for_key.count == 1 ? metadata_for_key.first : metadata_for_key
+          end
+        }
+      }
+    end
+  end
+
   # AppleScript based metadata setter.
   class Writer
     include AppleScripter
