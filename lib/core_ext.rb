@@ -25,8 +25,9 @@ class IO
   # Hat tip Eric Lubow, http://eric.lubow.org/2010/ruby/multiple-input-locations-from-bash-into-ruby/
   def dump(**options)
     return nil if self.closed?
-      temp.write(self.read_nonblock(1)) # raises IO::WaitReadable if IO is blocking
     Tempfile.open('IO-dump', **options) do |temp|
+      b = self.read_nonblock(1) # raises IO::WaitReadable if IO is blocking
+      self.ungetbyte(b)         # IO.rewind does not work on STDIN
       self.each_line do |line| temp.write(line) end
       temp
     end
