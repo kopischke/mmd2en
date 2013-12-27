@@ -15,11 +15,15 @@ sources.empty? and exit
 mmd = MultiMarkdownParser.new
 TMP = 'mmd2en'
 
-# Create the metadata source processor queue:
-processors =  Metadata::ProcessorQueue.new
-processors << Metadata::YAMLFrontmatterProcessor.new
-processors << Metadata::LegacyFrontmatterProcessor.new
-processors << ->(file) { mmd.load_file_metadata(file, 'title', 'notebook', 'tags', 'keywords', 'url') }
+# Create the file system metadata processor queue:
+file_queue    =  Metadata::ProcessorQueue.new
+file_queue    << Metadata::SpotlightPropertiesProcessor.new(tags: ['kMDItemUserTags', 'kMDItemOMUserTags'])
+
+# Create the content metadata source processor queue:
+content_queue =  Metadata::ProcessorQueue.new
+content_queue << Metadata::YAMLFrontmatterProcessor.new
+content_queue << Metadata::LegacyFrontmatterProcessor.new
+content_queue << ->(file) { mmd.load_file_metadata(file, 'title', 'notebook', 'tags', 'keywords', 'url') }
 
 # Set up Evernote metadata item specific writers:
 title_sieve  = EDAM::StringSieve.new(max_chars: EDAM::NOTE_TITLE_LEN_MAX)
@@ -50,35 +54,41 @@ writers = {
   /^attach(ments|ed( (documents|files))?)?$/i   => files_writer
 }
 
-sources.map{|s| s.dump!(external_encoding: Encoding::UTF_8) }.each do |source|
-  begin
-    # Get merged metadata from parser queue:
-    metadata = processors.compile(source)
+sources.each do |source|
+  filename = nil
+  metadata = {}
 
-    # Let MMD create a HTML output file:
-    html = Tempfile.new([TMP, '.html'])
-    html.close
-    mmd.convert_file(source, output_file: html, full_document: true)
+  # Get merged file system metadata from the original files:
+  unless source.is_a?(Tempfile)
+    metadata = file_queue.compile(source)
+    filename = File.basename(source, '.*')
+  end
 
-    # Create Evernote note from HTML output file (in default notebook, with current date as title):
-    new_note  = 'newNote'
-    note_path = Metadata::Helpers::EvernoteRunner.new.run_script(
-      %Q{set #{new_note} to (create note from file (#{html.to_applescript}) title (current date as text))},
-      get_note_path_for: new_note
-    )
-    note = Metadata::Helpers::NotePath.new(note_path)
+  # Get merged file / text content metadata from a temp UTF-8 copy:
+  source = source.dump!(external_encoding: Encoding::UTF_8)
+  metadata.merge!(content_queue.compile(source))
 
-    # Set note title to H1 element content of HTML source (if any):
-    title = String(REXML::Document.new(File.new(html.path)).root.text('body/h1')) rescue nil
-    title_writer.write(note, title) unless title.nil?
+  # Let MMD create a HTML output file:
+  html = Tempfile.new([TMP, '.html'])
+  html.close
+  mmd.convert_file(source, output_file: html, full_document: true)
 
-    # Write recognized metadata to created note:
-    metadata.each do |key, value|
-      writer = writers.find(->{ [nil, nil] }) {|pattern, writer| key =~ pattern }[1]
-      writer and note = writer.write(note, value)
-    end
+  # Create Evernote note from HTML output file (in default notebook, with fallback title):
+  new_note  = 'newNote'
+  fallback  = filename && filename.to_applescript || '(current date as text)'
+  note_path = Metadata::Helpers::EvernoteRunner.new.run_script(
+    %Q{set #{new_note} to (create note from file (#{html.to_applescript}) title #{fallback})},
+    get_note_path_for: new_note
+  )
+  note = Metadata::Helpers::NotePath.new(note_path)
 
-  ensure
-    html.close!
+  # Set note title to H1 element content of HTML source (if any):
+  title = String(REXML::Document.new(File.new(html.path)).root.text('body/h1')) rescue nil
+  title_writer.write(note, title) unless title.nil?
+
+  # Write recognized metadata to created note:
+  metadata.each do |key, value|
+    writer = writers.find(->{ [nil, nil] }) {|pattern, writer| key =~ pattern }[1]
+    writer and note = writer.write(note, value)
   end
 end
