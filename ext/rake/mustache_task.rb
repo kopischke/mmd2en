@@ -22,7 +22,7 @@ module Rake
     end
 
     def template
-      @template || "#{@target}.mustache" unless @target.nil?
+      @template ||= @target and "#{@target}.mustache"
     end
 
     def template=(template_file)
