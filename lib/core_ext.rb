@@ -43,46 +43,23 @@ class IO
   end
 end
 
+
+  def real_encoding
+    path = self.respond_to?(:path) ? self.dup.dump(binmode: true) : self.path
+    path and File.real_encoding(path)
+  end
+end
+
 class File
-  def self.new(filename, mode = 'r', **opt)
-    mode, opt = self.auto_encoding_mode(filename, mode, **opt)
-    super(filename, mode, **opt)
-  end
-
-  def self.open(filename, mode = 'r', perm = nil, **opt, &block)
-    mode, opt = self.auto_encoding_mode(filename, mode, **opt)
-    super(filename, mode, **opt, &block)
-  end
-
-  # Simple `file` utility wrapper to guess encodings.
-  def self.guess_encoding(filename)
+  def self.real_encoding(file)
     if %{which file}.chomp.empty?
-      warn 'Unable to guess file encoding: `file` utility not found.'
+      warn 'Unable to guess IO encoding: `file` utility not found.'
       return nil
     end
 
-    path = filename.is_a?(File) ? filename.path : String(filename)
-    enc  = %x{file -I #{path.shellescape}}.chomp.split('charset=').last
-    Encoding.find(enc) unless enc =~ /unknown/ || $?.exitstatus != 0
-  end
-
-  protected
-  # Try to automagically set the external encoding files on guess_file_encoding: true.
-  def self.auto_encoding_mode(filename, mode, **opt)
-    path = filename.is_a?(File) ? filename.path : String(filename)
-    if File.exist?(path) && opt[:guess_file_encoding] == true # ignore if not opening an existing file
-      enc_mode     = mode.split(':')[1..-1] if mode.is_a?(String)
-      enc_internal = Array(enc_mode)[1] || opt[:internal_encoding] || opt[:encoding] && opt[:encoding].split(':')[1]
-
-      if enc_file = File.guess_encoding(path)                 # rewrite mode and opt by:
-        mode = mode.split(':')[0] if enc_mode                 # – removing encoding information from mode
-        opt.reject! {|k,v| k =~ /ternal_encoding/ }           # – removing (:internal|:external)_encoding options
-        opt[:encoding] = [                                    # – setting the :encoding option
-          String(enc_file).sub(/^UTF-(?=8|16)/i, 'BOM|UTF-'), #   (with BOM awareness for UTF-8 and UTF-16)
-          String(enc_internal)
-        ].compact.join(':')
-      end
-    end
-    [mode, opt]
+    path = file.respond_to?(:path) ? file.path : file
+    enc = %x{file -I #{path.shellescape}}.chomp.split('charset=').last
+    fail "Error guessing IO encoding: `file` returned #{$?.exitstatus}." unless $?.exitstatus == 0
+    Encoding.find(enc) unless enc =~ /(unknown|binary)/
   end
 end
