@@ -168,6 +168,47 @@ class TestLegacyFrontmatterProcessor < Minitest::Test
   end
 end
 
+class TestAggregatingProcessor < Minitest::Test
+  class Metadata::AggregatingProcessor
+    attr_accessor :collector
+  end
+
+  def setup
+    @values    = {scalar: 'Foo', set: [1, 2]}
+    @collector = ->(file, key) { @values[key] }
+  end
+
+  def test_retrieves_a_hash_of_values_indexed_on_keys
+    keys      = {string: :scalar, array: :set}
+    processor = Metadata::AggregatingProcessor.new(**keys)
+    processor.collector = @collector
+    values    = processor.call(__FILE__)
+    assert_instance_of Hash, values
+    assert_equal keys.keys,  values.keys
+  end
+
+  def test_retrieves_and_merges_scalar_data_points
+    processor = Metadata::AggregatingProcessor.new(string: [:scalar, :scalar])
+    processor.collector = @collector
+    values    = processor.call(__FILE__)
+    assert_equal @values[:scalar], values[:string]
+  end
+
+  def test_retrieves_and_merges_array_data_points
+    processor = Metadata::AggregatingProcessor.new(array: [:set, :set])
+    processor.collector = @collector
+    values    = processor.call(__FILE__)
+    assert_equal @values[:set], values[:array]
+  end
+
+  def test_retrieves_and_merges_mixed_data_points
+    processor = Metadata::AggregatingProcessor.new(mix: [:scalar, :set])
+    processor.collector = @collector
+    values    = processor.call(__FILE__)
+    assert_equal @values.values.flatten, values[:mix]
+  end
+end
+
 class TestSpotlightPropertiesProcessor < Minitest::Test
   def setup
     @file  = File.new(__FILE__)
@@ -175,13 +216,6 @@ class TestSpotlightPropertiesProcessor < Minitest::Test
 
   def teardown
     @file.close
-  end
-
-  def test_retrieves_a_hash_of_values_indexed_on_keys
-    keys   = {name: 'kMDItemFSName', type: 'kMDItemContentType'}
-    values = Metadata::SpotlightPropertiesProcessor.new(**keys).call(@file)
-    assert_instance_of Hash, values
-    assert_equal keys.keys,  values.keys
   end
 
   def test_retrieves_and_merges_scalar_data_points
