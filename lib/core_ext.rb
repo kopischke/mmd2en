@@ -2,8 +2,8 @@ require 'shellwords'
 require 'tempfile'
 
 module ARGFParser
-  # Returns an Array of all files passed, plus STDIN, as Files open for reading.
-  # Does not block on empty STDIN and no files as it uses IO.dump.
+  # Returns an Array of all files passed, plus text content, as Files open for reading.
+  # Does not hang when nothing is passed as it tests for blocking STDIN I/O.
   # Hat tip Onteria, http://rubyit.wordpress.com/2011/07/25/ruby-and-argf/
   def to_files(**options)
     files = []
@@ -12,8 +12,8 @@ module ARGFParser
       ARGV.shift
     end
     if self.path == '-' # STDIN
-      file = self.file.dump(**options)
-      files << File.new(file.path) unless file.nil?
+      file = self.file.dump(**options) unless self.file.read_blocking?
+      file and files << File.new(file.path)
     end
     files.compact
   end
@@ -23,6 +23,7 @@ ARGF.extend ARGFParser
 
 # Hat tip Eric Lubow, http://eric.lubow.org/2010/ruby/multiple-input-locations-from-bash-into-ruby/
 class IO
+  # Dump IO into a Tempfile (closed on return).
   def dump(**options)
     return nil if self.closed?
     Tempfile.open('IO-dump', **options) do |temp|
