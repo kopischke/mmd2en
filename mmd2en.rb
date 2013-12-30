@@ -20,6 +20,7 @@ TMP = 'mmd2en'
 
 # Create the file system metadata processor queue:
 file_queue    =  Metadata::ProcessorQueue.new
+file_queue    << Metadata::FilePropertiesProcessor.new(date: :ctime)
 file_queue    << Metadata::SpotlightPropertiesProcessor.new(tags: ['kMDItemUserTags', 'kMDItemOMUserTags'])
 
 # Create the content metadata source processor queue:
