@@ -21,19 +21,14 @@ end
 
 ARGF.extend ARGFParser
 
+# Hat tip Eric Lubow, http://eric.lubow.org/2010/ruby/multiple-input-locations-from-bash-into-ruby/
 class IO
-  # Dump IO into a Tempfile (closed on return), without blocking.
-  # Hat tip Eric Lubow, http://eric.lubow.org/2010/ruby/multiple-input-locations-from-bash-into-ruby/
   def dump(**options)
     return nil if self.closed?
     Tempfile.open('IO-dump', **options) do |temp|
-      b = self.read_nonblock(1) # raises IO::WaitReadable if IO is blocking
-      self.ungetbyte(b)         # IO.rewind does not work on STDIN
       self.each_line do |line| temp.write(line) end
       temp
     end
-  rescue IO::WaitReadable, EOFError
-    nil
   end
 
   # Like `dump`, but closes the IO stream after dumping.
@@ -41,8 +36,16 @@ class IO
     temp = self.dump(**options) and self.close
     temp
   end
-end
 
+  def read_blocking?
+    b = self.read_nonblock(1) # raises IO::WaitReadable if IO is blocking
+    self.ungetbyte(b)         # IO.rewind does not work on non-file streams
+    false
+  rescue IO::WaitReadable
+    true
+  rescue EOFError
+    false
+  end
 
   def real_encoding
     path = self.respond_to?(:path) ? self.dup.dump(binmode: true) : self.path
