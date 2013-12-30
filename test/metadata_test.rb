@@ -239,6 +239,24 @@ class TestSpotlightPropertiesProcessor < Minitest::Test
   end
 end
 
+class FilePropertiesProcessor < Minitest::Test
+  def setup
+    @file  = File.new(__FILE__)
+  end
+
+  def teardown
+    @file.close
+  end
+
+  def test_retrieves_file_method_properties
+    keys = {atime: :atime, path: :path}
+    values = Metadata::FilePropertiesProcessor.new(**keys).call(@file)
+    assert_equal keys.count, values.count
+    assert_instance_of Time, values[:atime]
+    assert_instance_of String, values[:path]
+  end
+end
+
 class TestNotePath < Minitest::Test
   def setup
     @notebook  = 'Default Notebook'

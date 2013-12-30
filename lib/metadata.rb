@@ -105,7 +105,13 @@ module Metadata
       }
       super
     end
+  end
 
+  # File system properties processor: extract given keys.
+  class FilePropertiesProcessor < AggregatingProcessor
+    def initialize(**keys)
+      @collector = ->(file, method){ File.send(method, file.path) }
+      super
     end
   end
 
