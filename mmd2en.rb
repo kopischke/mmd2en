@@ -14,7 +14,7 @@ Encoding.default_internal = Encoding::UTF_8 # normalize internal source encoding
 sources = ARGF.to_files(encoding: Encoding.default_external.name.gsub(/^(?=UTF-)/i, 'BOM|'))
 sources.empty? and exit
 
-# Set up MMD parser and Tempfile key
+# Set up MMD parser and Tempfile key:
 mmd = MultiMarkdownParser.new
 TMP = 'mmd2en'
 
@@ -93,7 +93,7 @@ sources.each do |source|
 
   # Write recognized metadata to created note:
   metadata.each do |key, value|
-    writer = writers.find(->{ [nil, nil] }) {|pattern, writer| key =~ pattern }[1]
+    writer = writers.find(->{ [nil, nil] }) {|pattern, _| key =~ pattern }[1]
     writer and note = writer.write(note, value)
   end
 end
