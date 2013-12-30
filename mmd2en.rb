@@ -8,7 +8,10 @@ require_relative 'lib/edam'
 require_relative 'lib/metadata'
 require_relative 'lib/mmd'
 
-sources = ARGF.to_files(guess_file_encoding: true, internal_encoding: Encoding::UTF_8)
+Encoding.default_internal = Encoding::UTF_8 # normalize internal source encodings
+
+# Acquire sources:
+sources = ARGF.to_files(encoding: Encoding.default_external.name.gsub(/^(?=UTF-)/i, 'BOM|'))
 sources.empty? and exit
 
 # Set up MMD parser and Tempfile key
@@ -65,6 +68,8 @@ sources.each do |source|
   end
 
   # Get merged file / text content metadata from a temp UTF-8 copy:
+  source_encoding = source.real_encoding unless source.external_encoding != Encoding.default_external
+  source_encoding and source.set_encoding(source_encoding)
   source = source.dump!(external_encoding: Encoding::UTF_8)
   metadata.merge!(content_queue.compile(source))
 
