@@ -52,18 +52,18 @@ class TestSemanticVersion < Minitest::Test
     assert_equal "Version #{version}.", ('Version ' << SemanticVersion.new(version) << '.')
   end
 
-  def test_raises_an_error_if_passed_an_invalid_version_representation
+  def test_raises_error_if_passed_invalid_version_representation
     assert_raises(ArgumentError) { SemanticVersion.new('1.2a')    }
     assert_raises(ArgumentError) { SemanticVersion.new([1, 2, 0]) }
     assert_raises(ArgumentError) { SemanticVersion.new('')        }
     assert_raises(ArgumentError) { SemanticVersion.new(nil)       }
   end
 
-  def expose_keys_values_and_each_methods_correctly
+  def test_exposes_keys_values_and_each_methods_correctly
     v = SemanticVersion.new('0.8.11')
     assert_equal [:major, :minor, :patch], v.keys
     assert_equal [0, 8, 11], v.values
-    assert_instance_of v.each, Enumerator
+    assert_instance_of Enumerator, v.each
   end
 
   def test_compares_to_other_versions
