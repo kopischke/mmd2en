@@ -23,13 +23,17 @@ ARGF.extend ARGFParser
 
 # Hat tip Eric Lubow, http://eric.lubow.org/2010/ruby/multiple-input-locations-from-bash-into-ruby/
 class IO
-  # Dump IO into a Tempfile (closed on return).
+  # Dump IO into a Tempfile open in r+ mode.
   def dump(**options)
     return nil if self.closed?
-    Tempfile.open('IO-dump', **options) do |temp|
-      self.each_line do |line| temp.write(line) end
-      temp
-    end
+    temp = Tempfile.new('IO-dump', **options)
+    self.each_line do |line| temp.write(line) end
+    temp.close # finalize write
+    temp.open  # re-open in r+ mode
+    temp
+  rescue => e
+    temp.close! if temp
+    raise e
   end
 
   # Like `dump`, but closes the IO stream after dumping.

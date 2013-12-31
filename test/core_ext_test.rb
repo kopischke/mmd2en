@@ -83,7 +83,7 @@ class TestIO < Minitest::Test
   def test_dump_passes_options_to_tempfile
     kwargs   = {external_encoding: Encoding::UTF_16LE}
     tempfile = Minitest::Mock.new
-    tempfile.expect :open, Tempfile.new('TEST'), [String, kwargs]
+    tempfile.expect :new, Tempfile.new('TEST'), [String, kwargs]
     Thread.new { @w.puts @content; @w.close }
     IO.stub_const(:Tempfile, tempfile) do
       @r.dump!(**kwargs)
@@ -107,6 +107,7 @@ class TestIO < Minitest::Test
     file.close
     raise e
   end
+end
 
 class TestFile < Minitest::Test
   def setup
