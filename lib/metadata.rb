@@ -135,7 +135,7 @@ module Metadata
           list.map {|e| @normalizers[@item_type].call(e) }.compact.uniq
         },
         text:  ->(input) { String(input) },
-        date:  ->(input) { input.is_a?(Date) ? input : DateTime.parse(input) rescue nil },
+        date:  ->(input) { DateTime.parse(String(input)) rescue nil },
         file:  ->(input) { Pathname.new(input) if File.readable?(input) rescue false },
         other: ->(input) { fail "unknown metadata type '#{type}'" }
       }
