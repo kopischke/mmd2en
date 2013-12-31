@@ -13,7 +13,7 @@ module ARGFParser
     end
     if self.path == '-' # STDIN
       file = self.file.dump(**options) unless self.file.read_blocking?
-      file and files << File.new(file.path)
+      file and files << file
     end
     files.compact
   end
