@@ -100,7 +100,7 @@ module Metadata
       @collector = ->(file, spotlight_key) {
         out = @sh.run_command('mdls', '-raw', '-name', spotlight_key, file.path)
         @sh.ok? or fail "Unable to collect '#{spotlight_key}' data: `mdls` exited with status #{@sh.exitstatus}."
-        out = out.lines.map {|l| l.strip.gsub(/(^[("]|[")],?$)/, '')[/^.+$/] }.compact
+        out = out.lines.map {|l| l.strip.gsub(/(^(\(null\)|\(|\)),?$|^"|",?$)/, '')[/^.+$/] }.compact
         out.count > 1 ? out : out.first
       }
       super
