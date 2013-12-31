@@ -38,7 +38,8 @@ class IO
 
   # Like `dump`, but closes the IO stream after dumping.
   def dump!(**options)
-    temp = self.dump(**options) and self.close
+    temp = self.dump(**options)
+    self.close
     temp
   end
 
