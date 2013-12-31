@@ -95,7 +95,7 @@ sources.each do |source|
 
   # Set note title to H1 element content of HTML source (if any):
   title = String(REXML::Document.new(File.new(html.path)).root.text('body/h1')) rescue nil
-  title_writer.write(note, title) unless title.nil?
+  title_writer.write(note, title) unless title.nil? || title.empty?
 
   # Write recognized metadata to created note:
   metadata.each do |key, value|
