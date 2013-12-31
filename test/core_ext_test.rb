@@ -108,28 +108,43 @@ class TestIO < Minitest::Test
     raise e
   end
 
-  def test_exposes_real_encoding_method
-    assert_respond_to STDIN, :real_encoding
-  end
-
-  def test_passes_real_encoding_request_to_file
-    test_path = File.join(File.dirname(__FILE__), 'content', 'Test-utf16le.mmd')
-    test_file = File.new(test_path)
-    assert_equal test_file.real_encoding, File.real_encoding(test_path)
-  rescue => e
-    test_file and test_file.close
-    raise e
-  end
-end
-
 class TestFile < Minitest::Test
+  def setup
+    @utf16_le = File.new(File.join(File.dirname(__FILE__), 'content', 'Test-utf16le.mmd'))
+    @macroman = File.new(File.join(File.dirname(__FILE__), 'content', 'Test-macroman.mmd'))
+  end
+
+  def teardown
+    @utf16_le.close
+    @macroman.close
+  end
+
+  def test_exposes_real_encoding_methods
+    assert_respond_to File,      :real_encoding
+    assert_respond_to @utf16_le, :real_encoding
+  end
+
   def test_real_encoding_recognizes_encodings
-    test_file = File.join(File.dirname(__FILE__), 'content', 'Test-utf16le.mmd')
-    assert_equal Encoding::UTF_16LE, File.real_encoding(test_file)
+    assert_equal Encoding::UTF_16LE, File.real_encoding(@utf16_le.path)
+    assert_equal Encoding::UTF_16LE, @utf16_le.real_encoding
+    assert_equal Encoding.find('macRoman'), File.real_encoding(@macroman.path)
+    assert_equal Encoding.find('macRoman'), @macroman.real_encoding
   end
 
   def test_real_encoding_returns_nil_when_unsure
-    test_file = File.join(File.dirname(__FILE__), 'content', 'Test-macroman.mmd')
-    assert_nil File.real_encoding(test_file)
+    # Mac Roman is not recognized without the xattr, which we lose on dumping
+    assert_nil File.real_encoding(@macroman.dump.path)
+    assert_nil @macroman.dump.real_encoding
+  end
+end
+
+class TestEncoding < Minitest::Test
+  def test_exposes_find_iana_charset_method
+    assert_respond_to Encoding, :find_iana_charset
+  end
+
+  def test_finds_iana_named_charsets
+    assert_equal Encoding.find('macRoman'), Encoding.find_iana_charset('macintosh')
+    assert_nil   Encoding.find_iana_charset('unknown-8bit')
   end
 end

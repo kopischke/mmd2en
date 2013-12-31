@@ -47,23 +47,56 @@ class IO
   rescue EOFError
     false
   end
-
-  def real_encoding
-    path = self.respond_to?(:path) ? self.dup.dump(binmode: true) : self.path
-    path and File.real_encoding(path)
-  end
 end
 
 class File
-  def self.real_encoding(file)
-    if %{which file}.chomp.empty?
-      warn 'Unable to guess IO encoding: `file` utility not found.'
-      return nil
-    end
+  # Try to get the real encoding of a file (returns an Encoding, or nil).
+  def self.real_encoding(path)
+    path = File.expand_path(path)
 
-    path = file.respond_to?(:path) ? file.path : file
-    enc = %x{file -I #{path.shellescape}}.chomp.split('charset=').last
-    fail "Error guessing IO encoding: `file` returned #{$?.exitstatus}." unless $?.exitstatus == 0
-    Encoding.find(enc) unless enc =~ /(unknown|binary)/
+    file_guess = ->(fpath) {
+      if %{which file}.chomp.empty?
+        warn 'File encoding guess skipped: `file` utility not found.'
+        return nil
+      else
+        cset = %x{file -I #{fpath.shellescape}}.chomp.split('charset=').last
+        fail "Error guessing file encoding: `file` returned #{$?.exitstatus}." unless $?.exitstatus == 0
+        Encoding.find_iana_charset(cset) unless cset.match(/binary/i)
+      end
+    }
+
+    apple_text_encoding = ->(fpath) {
+      if %{which xattr}.chomp.empty?
+        warn 'com.apple.TextEncoding test skipped: `xattr` utility not found.'
+        return nil
+      else
+        cset = %x{xattr -p com.apple.TextEncoding #{fpath.shellescape} 2>/dev/null}.chomp.split(';').first
+        Encoding.find_iana_charset(cset) unless cset.nil?
+      end
+    }
+
+    # note Apple’s TextEncoding lookup skews towards dummy UTF forms
+    [file_guess, apple_text_encoding].each do |test|
+      enc = test.call(path)
+      return enc unless enc.nil? || enc.dummy?
+    end
+    nil
+  end
+
+  def real_encoding
+    File.real_encoding(self.path)
+  end
+end
+
+class Encoding
+  # Find IANA mappings `Encoding.find` will miss.
+  # http://www.iana.org/assignments/character-sets/character-sets.xhtml
+  def self.find_iana_charset(name)
+    iana_mappings = {
+      'macintosh'    => 'macRoman',
+      'unknown-8bit' => nil
+    }
+    ruby_encoding = iana_mappings.fetch(String(name).downcase, name)
+    ruby_encoding and self.find(ruby_encoding)
   end
 end
