@@ -72,6 +72,8 @@ CHANGELOG_DATA = File.join(DOCS_DIR, 'Changelog.yaml')
 CHANGELOG_MUST = File.join(DOCS_DIR, 'Changelog.md.mustache')
 CHANGELOG_RSS  = File.join(DOCS_DIR, 'rss', 'releases.xml')
 
+# Misc files
+LICENSE        = File.join(BASE_DIR, 'LICENSE')
 
 # TASKS
 # -----
@@ -204,7 +206,7 @@ Rake::MustacheTask.new(APP_TEMPLATE) do |t|
   t.data       = {
     name:     FULL_NAME,
     id:       APP_BUNDLE_ID,
-    includes: [MAIN_SCRIPT, "#{LIB_DIR}#{File::SEPARATOR}", "#{MMD_BIN_DIR}#{File::SEPARATOR}"].map {|e| {path: e} },
+    includes: [MAIN_SCRIPT, "#{LIB_DIR}#{File::SEPARATOR}", "#{MMD_BIN_DIR}#{File::SEPARATOR}", LICENSE].map {|e| {path: e} },
     icon:     File.join(APP_DIR, "#{BASE_NAME}.icns"),
     script:   APP_SCRIPT,
     version:  version.to_short,
