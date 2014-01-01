@@ -1,7 +1,7 @@
 # encoding: UTF-8
 require_relative 'test_helper'
 require 'core_ext'
-require "tempfile"
+require 'tempfile'
 
 def ruby_run(cmd, *args)
   %x{ruby -I #{File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib'))} -e 'require "core_ext"; #{cmd}' #{args.join(' ')}}
