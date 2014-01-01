@@ -43,6 +43,7 @@ class IO
     temp
   end
 
+  # Test if a read from IO would block (true on pipes etc.)
   def read_blocking?
     b = self.read_nonblock(1) # raises IO::WaitReadable if IO is blocking
     self.ungetbyte(b)         # IO.rewind does not work on non-file streams
@@ -88,6 +89,7 @@ class File
     nil
   end
 
+  # Try to get the real external encoding of the File object.
   def real_encoding(**kwargs)
     File.real_encoding(self.path, **kwargs)
   end
