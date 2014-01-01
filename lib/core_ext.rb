@@ -93,6 +93,11 @@ class File
   def real_encoding(**kwargs)
     File.real_encoding(self.path, **kwargs)
   end
+
+  # Return the expanded form of the path used to create the File.
+  def expanded_path
+    File.expand_path(self.path)
+  end
 end
 
 class Encoding

@@ -1,5 +1,6 @@
 # encoding: UTF-8
 require_relative 'applescripter'
+require_relative 'core_ext'
 require_relative 'shellrun'
 
 # Evernote metadata setting library.
@@ -74,7 +75,7 @@ module Metadata
     end
 
     def call(file)
-      metadata = YAML.load_file(file.path) rescue false
+      metadata = YAML.load_file(file.expanded_path) rescue false
       metadata = {} if metadata == false || metadata.is_a?(String) # no actual frontmatter found
       unless metadata.empty?
         re = '^---[[:space:]]*$'
@@ -101,7 +102,7 @@ module Metadata
     private
     def initialize(**keys)
       @collector = ->(file, spotlight_key) {
-        out = @sh.run_command('mdls', '-raw', '-name', spotlight_key, file.path)
+        out = @sh.run_command('mdls', '-raw', '-name', spotlight_key, file.expanded_path)
         @sh.ok? or fail "Unable to collect '#{spotlight_key}' data: `mdls` exited with status #{@sh.exitstatus}."
         out = out.lines.map {|l| l.strip.gsub(/(^(\(null\)|\(|\)),?$|^"|",?$)/, '')[/^.+$/] }.compact
         out.count > 1 ? out : out.first
@@ -113,7 +114,7 @@ module Metadata
   # File system properties processor: extract given keys.
   class FilePropertiesProcessor < AggregatingProcessor
     def initialize(**keys)
-      @collector = ->(file, method){ File.send(method, file.path) }
+      @collector = ->(file, method){ File.send(method, file.expanded_path) }
       super
     end
   end

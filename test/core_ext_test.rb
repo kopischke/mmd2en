@@ -144,6 +144,15 @@ class TestFile < Minitest::Test
     assert_nil   file.real_encoding(accept_dummy: false)
     assert_equal Encoding.find('UTF-7'), file.real_encoding(accept_dummy: true)
   end
+
+  def test_exposes_expanded_path_method
+    assert_respond_to @utf16_le, :expanded_path
+  end
+
+  def test_expanded_path_returns_expanded_creation_path
+    skip if @macroman.path == File.expand_path(@macroman.path)
+    assert_equal File.expand_path(@macroman.path), @macroman.expanded_path
+  end
 end
 
 class TestEncoding < Minitest::Test
