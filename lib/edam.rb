@@ -3,6 +3,8 @@
 # Quick and dirty module to group Evernote data format restraints.
 # Source: http://dev.evernote.com/doc/reference/Limits.html.
 module EDAM
+  VERSION = '1.0.0'
+
   NOTEBOOK_NAME_LEN_MAX    = 100
   NOTE_RESOURCES_MAX       = 100
   NOTE_TITLE_LEN_MAX       = 255
