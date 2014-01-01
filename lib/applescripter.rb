@@ -10,6 +10,8 @@ require 'shellrun'
 require 'tempfile'
 
 module AppleScripter
+  VERSION = '1.0.0'
+
   module Literal
     def to_applescript
       String(self)
