@@ -8,10 +8,11 @@ require_relative 'lib/edam'
 require_relative 'lib/metadata'
 require_relative 'lib/mmd'
 
-Encoding.default_internal = Encoding::UTF_8 # normalize internal source encodings
+MASTER_ENCODING = Encoding::UTF_8
 
 # Acquire sources:
-sources = ARGF.to_files(encoding: Encoding.default_external.name.gsub(/^(?=UTF-)/i, 'BOM|'))
+encoding = [Encoding.default_external.name.gsub(/^(?=UTF-)/i, 'BOM|'), MASTER_ENCODING.name].join(':')
+sources  = ARGF.to_files(encoding: encoding)
 sources.empty? and exit
 
 # Set up MMD parser and Tempfile key:
