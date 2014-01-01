@@ -174,7 +174,7 @@ Rake::SmartFileTask.new(ACTION_SCRIPT, MAIN_SCRIPT) do |t|
   t.on_run do
     # Generate main.command and make executable (Action will fail if the script is not x!)
     action_script = self.target.shellescape
-    %x{echo '#!/usr/bin/ruby -KuW0' | cat - #{MAIN_SCRIPT.shellescape} > #{action_script} && chmod +x #{action_script}}
+    %x{echo '#!/usr/bin/ruby -E "UTF-8" -W0' | cat - #{MAIN_SCRIPT.shellescape} > #{action_script} && chmod +x #{action_script}}
     fail "Generation of '#{self.target}' failed with status #{$?.exitstatus}." unless $?.exitstatus == 0
   end
 end
