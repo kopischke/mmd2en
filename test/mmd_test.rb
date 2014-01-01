@@ -190,5 +190,5 @@ class TestMultiMarkdownParser < Minitest::Test
       runner.verify
       file_lib.verify
     end
-   end
+  end
 end
