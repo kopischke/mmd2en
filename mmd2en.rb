@@ -69,11 +69,12 @@ sources.each do |source|
   end
 
   # Skip files / streams with unknown encoding, as we cannot ensure conversion to UTF-8:
-  unless source.external_encoding != Encoding.default_external || source_encoding = source.real_encoding
+  # accept Rubys’s BOM recognition (which results in pos > 0), else check externally.
+  unless source.pos > 0 || source_encoding = source.real_encoding
     warn "Skipping #{filename ? "file '#{source.path}'" : 'input stream'}: unknown encoding."
     next
   end
-        
+
   # Get merged file / text content metadata from a temp UTF-8 copy:
   source_encoding and source.set_encoding(source_encoding)
   source = source.dump!(external_encoding: Encoding::UTF_8)
