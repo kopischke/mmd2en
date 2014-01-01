@@ -68,8 +68,13 @@ sources.each do |source|
     filename = File.basename(source, '.*')
   end
 
+  # Skip files / streams with unknown encoding, as we cannot ensure conversion to UTF-8:
+  unless source.external_encoding != Encoding.default_external || source_encoding = source.real_encoding
+    warn "Skipping #{filename ? "file '#{source.path}'" : 'input stream'}: unknown encoding."
+    next
+  end
+        
   # Get merged file / text content metadata from a temp UTF-8 copy:
-  source_encoding = source.real_encoding unless source.external_encoding != Encoding.default_external
   source_encoding and source.set_encoding(source_encoding)
   source = source.dump!(external_encoding: Encoding::UTF_8)
   metadata.merge!(content_queue.compile(source))
