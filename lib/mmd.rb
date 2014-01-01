@@ -1,9 +1,8 @@
 # encoding: UTF-8
 require 'forwardable'
 require 'pathname'
-
-require_relative 'semver'
-require_relative 'shellrun'
+require 'semver'
+require 'shellrun'
 
 # Wrapper for the `multimarkdown` binary: get best version, get metadata, convert files.
 class MultiMarkdownParser

@@ -1,12 +1,13 @@
 # encoding: UTF-8
+$:.unshift(File.join(File.dirname(__FILE__), 'lib'))
+
+require 'applescripter'
+require 'core_ext'
+require 'edam'
+require 'metadata'
+require 'mmd'
 require 'rexml/document'
 require 'tempfile'
-
-require_relative 'lib/applescripter'
-require_relative 'lib/core_ext'
-require_relative 'lib/edam'
-require_relative 'lib/metadata'
-require_relative 'lib/mmd'
 
 TEMPFILE_KEY    = 'mmd2en'
 MASTER_ENCODING = Encoding::UTF_8

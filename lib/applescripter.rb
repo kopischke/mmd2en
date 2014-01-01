@@ -6,9 +6,8 @@
 require 'date'
 require 'forwardable'
 require 'pathname'
+require 'shellrun'
 require 'tempfile'
-
-require_relative 'shellrun'
 
 module AppleScripter
   module Literal
