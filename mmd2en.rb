@@ -8,6 +8,7 @@ require_relative 'lib/edam'
 require_relative 'lib/metadata'
 require_relative 'lib/mmd'
 
+TEMPFILE_KEY    = 'mmd2en'
 MASTER_ENCODING = Encoding::UTF_8
 
 # Acquire sources:
@@ -15,9 +16,8 @@ encoding = [Encoding.default_external.name.gsub(/^(?=UTF-)/i, 'BOM|'), MASTER_EN
 sources  = ARGF.to_files(encoding: encoding)
 sources.empty? and exit
 
-# Set up MMD parser and Tempfile key:
+# Set up MMD parser:
 mmd = MultiMarkdownParser.new
-TMP = 'mmd2en'
 
 # Create the file system metadata processor queue:
 file_queue    =  Metadata::ProcessorQueue.new
@@ -82,7 +82,7 @@ sources.each do |source|
   metadata.merge!(content_queue.compile(source))
 
   # Let MMD create a HTML output file:
-  html = Tempfile.new([TMP, '.html'])
+  html = Tempfile.new([TEMPFILE_KEY, '.html'])
   html.close
   mmd.convert_file(source, output_file: html, full_document: true)
 
