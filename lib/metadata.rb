@@ -14,20 +14,25 @@ module Metadata
     end
 
     # Call all processors in order on `file`, normalizing and merging their returned metadata.
-    # Skip processors raising StandardError with a warning message.
+    # Processors raising a StandardError are skipped with a warning message.
     def compile(file)
-      File.open(file, 'r+') do |f|
-        @processors.reduce({}) { |hash, processor|
-          begin
-            data = processor.call(f)
-            data = Hash[data.keys.map {|k| String(k).downcase }.zip(data.values)] # stringify keys
-            hash.merge(data) # last value of identical keys wins
-          rescue StandardError => e
-            warn String(e)
-            hash
+      @processors.reduce({}) { |hash, processor|
+        begin
+          metadata, content = processor.call(file)
+          metadata = Hash[metadata.keys.map {|k| String(k).downcase }.zip(metadata.values)] # stringify keys
+        rescue StandardError => e
+          warn String(e)
+          hash
+        else
+          unless content.nil?
+            cursor = file.pos
+            file.write(content)
+            file.flush
+            file.pos = cursor
           end
-        }
-      end
+          hash.merge(metadata) # last value of identical keys wins
+        end
+      }
     end
   end
 
@@ -73,10 +78,9 @@ module Metadata
       metadata = {} if metadata == false || metadata.is_a?(String) # no actual frontmatter found
       unless metadata.empty?
         re = '^---[[:space:]]*$'
-        content = @sh.run_command('sed', '-En', "1,/#{re}/{ /#{re}/!d; }; p", file.path, :|, 'sed', '-E', "/#{re}/,/#{re}/d")
-        File.write(file.path, content << $/)
+        content = @sh.run_command('sed', '-En', "1,/#{re}/{ /#{re}/!d; }; p", file.expanded_path, :|, 'sed', '-E', "/#{re}/,/#{re}/d")
       end
-      metadata
+      [metadata, content]
     end
   end
 
@@ -86,10 +90,9 @@ module Metadata
       content = @sh.run_command('sed', '-E', '1,/^[[:space:]]*$/{
         s/^@[[:space:]]+/Tags: /
         s/^=[[:space:]]+/Notebook: /
-      }', file.path)
-      @sh.ok? or fail "Unable to check '#{file.path}' for legacy front matter: `sed` exited with status #{@sh.exitstatus}."
-      File.write(file.path, content << $/) unless content == File.read(file.path).chomp
-      {}
+      }', file.expanded_path)
+      @sh.ok? or fail "Unable to check '#{file.expanded_path}' for legacy front matter: `sed` exited with status #{@sh.exitstatus}."
+      [{}, content]
     end
   end
 
