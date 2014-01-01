@@ -70,7 +70,7 @@ sources.each do |source|
 
   # Skip files / streams with unknown encoding, as we cannot ensure conversion to UTF-8:
   # accept Rubys’s BOM recognition (which results in pos > 0), else check externally.
-  unless source.pos > 0 || source_encoding = source.real_encoding
+  unless source.pos > 0 || source_encoding = source.real_encoding(accept_dummy: false)
     warn "Skipping #{filename ? "file '#{source.path}'" : 'input stream'}: unknown encoding."
     next
   end

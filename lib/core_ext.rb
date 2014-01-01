@@ -56,7 +56,7 @@ end
 
 class File
   # Try to get the real encoding of a file (returns an Encoding, or nil).
-  def self.real_encoding(path)
+  def self.real_encoding(path, accept_dummy: true)
     path = File.expand_path(path)
 
     file_guess = ->(fpath) {
@@ -83,13 +83,13 @@ class File
     # note Apple’s TextEncoding lookup skews towards dummy UTF forms
     [file_guess, apple_text_encoding].each do |test|
       enc = test.call(path)
-      return enc unless enc.nil? || enc.dummy?
+      return enc unless enc.nil? || enc.dummy? && !accept_dummy
     end
     nil
   end
 
-  def real_encoding
-    File.real_encoding(self.path)
+  def real_encoding(**kwargs)
+    File.real_encoding(self.path, **kwargs)
   end
 end
 

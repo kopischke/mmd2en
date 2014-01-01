@@ -137,6 +137,13 @@ class TestFile < Minitest::Test
     assert_nil File.real_encoding(@macroman.dump.path)
     assert_nil @macroman.dump.real_encoding
   end
+
+  def test_real_encoding_respects_accept_dummy_option
+    file = @macroman.dump # anything but an UTF file, which `file` recognizes
+    %x{xattr -w com.apple.TextEncoding 'utf-7;0' #{file.path.shellescape}}
+    assert_nil   file.real_encoding(accept_dummy: false)
+    assert_equal Encoding.find('UTF-7'), file.real_encoding(accept_dummy: true)
+  end
 end
 
 class TestEncoding < Minitest::Test
