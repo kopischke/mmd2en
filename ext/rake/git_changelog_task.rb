@@ -12,15 +12,16 @@ module Rake
     alias_method  :logfile,  :target
     alias_method  :logfile=, :target=
 
-    attr_accessor :format, :attribute, :with_tags
+    attr_accessor :format, :attribute, :filter, :with_tags
     protected     :on_run # set by GitChangelogTask
 
     Struct.new('GitCommit', :hash, :author, :blame, :date)
 
     def initialize(file, *dependencies, &block)
-      @format    = '%s'
-      @attribute = :collaborators
-      @with_tags = false
+      @format       = '%s'
+      @attribute    = :collaborators
+      @filter       = nil
+      @with_tags    = false
 
       self.on_run do
         puts 'Retrieving logged changes...'
@@ -48,6 +49,7 @@ module Rake
             unless r_data.empty?
               r_commit   = Struct::GitCommit.new(*r_data)
               messages   = %x{git log --format=#{msg_format.shellescape} #{range}}.chomp
+              messages   = messages.split($/).reject {|msg| msg.match(@filter) }.join($/) if @filter == true
               messages.gsub!(/ \[#{r_commit.author}\]$/mi, '') if @attribute == :collaborators
               version    = ::Version.new(*r.split('.'))
               changes[r] = {
