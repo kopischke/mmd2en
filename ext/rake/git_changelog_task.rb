@@ -12,7 +12,7 @@ module Rake
     alias_method  :logfile,  :target
     alias_method  :logfile=, :target=
 
-    attr_accessor :format, :attribute, :filter, :with_tags
+    attr_accessor :format, :attribute, :filter, :with_tags, :with_version
     protected     :on_run # set by GitChangelogTask
 
     Struct.new('GitCommit', :hash, :author, :blame, :date)
@@ -22,13 +22,14 @@ module Rake
       @attribute    = :collaborators
       @filter       = nil
       @with_tags    = false
+      @with_version = nil
 
       self.on_run do
         puts 'Retrieving logged changes...'
         logged   = File.file?(self.target) ? YAML.load_file(self.target) : {}
 
         puts 'Compiling current release list...'
-        releases = @with_tags ? %x{git tag}.chomp.split($/) : Version.current
+        releases = @with_tags ? %x{git tag}.chomp.split($/) : [@with_version]
         releases.reject! {|r| logged.keys.include?(r) }
 
         unless releases.empty?
