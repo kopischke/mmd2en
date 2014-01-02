@@ -113,6 +113,7 @@ end
 Rake::GitChangelogTask.new(CHANGELOG_DATA) do |t|
   t.verbose      = VERBOSE
   t.with_tags    = RELEASE_TAGS
+  t.with_version = version.to_short unless RELEASE_TAGS
   t.format       = '* %s'
   t.filter       = /^Build system:/i
 end
