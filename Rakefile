@@ -65,12 +65,14 @@ MMD_BIN        = FileList.new(File.join(MMD_BIN_DIR, 'multimarkdown'), File.join
 
 # Package upload contents
 PACKAGES       = [APP_BUNDLE, ACTION_BUNDLE]
+PACKAGES_ZIP   = File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}")
 
 # Change logs
 CHANGELOG      = File.join(BASE_DIR, 'CHANGELOG.md')
+CHANGELOG_RSS  = File.join(DOCS_DIR, 'rss', 'releases.xml')
+CHANGELOGS     = [CHANGELOG, CHANGELOG_RSS]
 CHANGELOG_DATA = File.join(DOCS_DIR, 'Changelog.yaml')
 CHANGELOG_MUST = File.join(DOCS_DIR, 'Changelog.md.mustache')
-CHANGELOG_RSS  = File.join(DOCS_DIR, 'rss', 'releases.xml')
 
 # Misc files
 LICENSE        = File.join(BASE_DIR, 'LICENSE')
@@ -267,7 +269,7 @@ desc 'Force rebuild all packages.'
 task :'build:force' => [:clobber, PACKAGES]
 
 # rake zip
-Rake::ZipTask.new(File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}"), *PACKAGES) do |t|
+Rake::ZipTask.new(PACKAGES_ZIP, *PACKAGES) do |t|
   t.named_task = {zip: 'Zip all packages for upload to GitHub.'}
   t.verbose    = VERBOSE
 end
