@@ -10,3 +10,6 @@ begin # Minitest reporters are entirely optional
   Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 rescue LoadError
 end
+
+LIB_PATH ||= File.join(File.dirname(File.expand_path(__FILE__)), '..', 'lib')
+$:.unshift(LIB_PATH)
