@@ -1,7 +1,9 @@
 # encoding: UTF-8
 $:.push File.join(File.dirname(__FILE__), 'ext')
 
-require 'bundler/setup'
+require 'bundler'
+Bundler.setup(:development, :reporters)
+
 require 'date'
 require 'kramdown'
 require 'osx/bundle'

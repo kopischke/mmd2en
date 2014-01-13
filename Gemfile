@@ -12,3 +12,7 @@ group :development do
   gem 'mustache',            '~> 0.99.5'
   gem 'version',             '~> 1.0'
 end
+
+group :reporters do
+  gem 'minitest-reporters',  '~> 1.0.0'
+end
