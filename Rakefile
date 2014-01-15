@@ -9,16 +9,19 @@ require 'kramdown'
 require 'osx/bundle'
 require 'osx/launch_services'
 require 'osx/services'
+require 'pathname'
 require 'rake/clean'
 require 'rake/git_changelog_task'
 require 'rake/mustache_task'
 require 'rake/testtask'
 require 'rake/version_task'
+require 'yard/rake/yardoc_task'
 require 'rake/zip_task'
 require 'shellwords'
 require 'version'
 require 'version/conversions'
 require 'yaml'
+require 'yard'
 
 def version
   Version.current
@@ -40,7 +43,6 @@ BASE_DIR       = File.join(File.expand_path(File.dirname(__FILE__)))
 LIB_DIR        = File.join(BASE_DIR, 'lib')
 BUILD_DIR      = File.join(BASE_DIR, 'build')
 PACKAGE_DIR    = File.join(BASE_DIR, 'packages')
-DOCS_DIR       = File.join(BASE_DIR, 'docs')
 
 # Core scripts
 MAIN_SCRIPT    = File.join(BASE_DIR, "#{BASE_NAME}.rb")
@@ -68,6 +70,11 @@ MMD_BIN        = FileList.new(File.join(MMD_BIN_DIR, 'multimarkdown'), File.join
 # Package upload contents
 PACKAGES       = [APP_BUNDLE, ACTION_BUNDLE]
 PACKAGES_ZIP   = File.join(BUILD_DIR, "#{BASE_NAME}-packages-#{version}")
+
+# Documentation
+DOCS_DIR       = File.join(BASE_DIR, 'docs')
+DOCS_DIR_YARD  = File.join(DOCS_DIR, 'yard')
+DOCS_README    = File.join(DOCS_DIR, 'README.md')
 
 # Change logs
 CHANGELOG      = File.join(BASE_DIR, 'CHANGELOG.md')
@@ -112,6 +119,28 @@ end
 ].each do |t|
   Rake::Task[t].enhance do Rake::Task[CHANGELOG_DATA].invoke end
 end
+
+# rake yard (with prior docs specific README generation)
+YARD::Rake::YardocTask.new do |t|
+  # use relative path or YARD will display local system paths for source files
+  t.files   =  [File.join(Pathname.new(LIB_DIR).relative_path_from(Pathname.new(BASE_DIR)), '**', '*.rb')]
+  t.options.push('--output-dir', DOCS_DIR_YARD.shellescape)
+  t.options.push('--markup', 'markdown')
+  t.options.push('--readme', DOCS_README.shellescape)
+  t.options.push('--verbose') if VERBOSE
+end
+
+Rake::MustacheTask.new(DOCS_README) do |t|
+  t.verbose = VERBOSE
+  t.data    = {
+    project:      FULL_NAME,
+    repo:         REPO_URL,
+    license_name: 'BSD License',
+    license_text: File.read(LICENSE)
+  }
+end
+
+Rake::Task[:yard].enhance([DOCS_README])
 
 # rake changelog
 Rake::GitChangelogTask.new(CHANGELOG_DATA) do |t|

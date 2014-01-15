@@ -1,5 +1,6 @@
 *.platypus
 *.app
+.yardoc/
 build/
 docs/wiki/
 test/content/

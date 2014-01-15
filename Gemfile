@@ -11,6 +11,7 @@ group :development do
   gem 'minitest-stub-const', '~> 0.1'
   gem 'mustache',            '~> 0.99.5'
   gem 'version',             '~> 1.0'
+  gem 'yard',                '~> 0.8'
 end
 
 group :reporters do
