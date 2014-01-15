@@ -43,9 +43,11 @@ module CoreExtensions
       File.real_encoding(self.path, **kwargs)
     end
 
-    # Return the expanded form of the path used to create the File.
-    def expanded_path
-      File.expand_path(self.path)
+    # Get the expanded form of the path used to create the file.
+    # @param dir_string [String] as in File.expand_path.
+    # @return [String] the path.
+    def expanded_path(dir_string = nil)
+      File.expand_path(self, dir_string)
     end
   end
 end
