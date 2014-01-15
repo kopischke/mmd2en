@@ -12,21 +12,24 @@ module Metadata
   end
 
   class AggregatingProcessor < Processor
-    def initialize(**keys)
-      keys or fail ArgumentError, "No aggregation keys given for #{self.class.name}."
-      @keys = keys
+    attr_reader :keys
+    def initialize(**keys, &block)
+      keys.empty? and fail ArgumentError, "No aggregation keys given for #{self.class.name}."
+      block.nil?  and fail ArgumentError, "No collector block given for #{self.class.name}."
+      @keys      = keys
+      @collector = block
       super()
     end
 
     def call(file)
       {}.tap {|hash|
-        @keys.each {|target_key, property_keys|
-          metadata_for_key = Array(property_keys).map {|key|
-            @collector.call(file, key)
+        @keys.each {|metatada_key, collector_items|
+          metadata_for_key = Array(collector_items).map {|collector_item|
+            instance_exec(file, collector_item, &@collector)
           }.flatten.compact.uniq
 
           unless metadata_for_key.empty?
-            hash[target_key] = metadata_for_key.count == 1 ? metadata_for_key.first : metadata_for_key
+            hash[metatada_key] = metadata_for_key.count == 1 ? metadata_for_key.first : metadata_for_key
           end
         }
       }
@@ -65,23 +68,22 @@ module Metadata
 
   # Spotlight properties processor: extract given keys.
   class SpotlightPropertiesProcessor < AggregatingProcessor
-    private
     def initialize(**keys)
-      @collector = ->(file, spotlight_key) {
+      super(**keys) do |file, spotlight_key|
         out = @sh.run_command('mdls', '-raw', '-name', spotlight_key, file.expanded_path)
         @sh.ok? or fail "Unable to collect '#{spotlight_key}' data: `mdls` exited with status #{@sh.exitstatus}."
         out = out.lines.map {|l| l.strip.gsub(/(^(\(null\)|\(|\)),?$|^"|",?$)/, '')[/^.+$/] }.compact
         out.count > 1 ? out : out.first
-      }
-      super
+      end
     end
   end
 
   # File system properties processor: extract given keys.
   class FilePropertiesProcessor < AggregatingProcessor
     def initialize(**keys)
-      @collector = ->(file, method){ File.send(method, file.expanded_path) }
-      super
+      super(**keys) do |file, method|
+        File.send(method, file)
+      end
     end
   end
 end

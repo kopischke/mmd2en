@@ -81,44 +81,53 @@ class TestLegacyFrontmatterProcessor < Minitest::Test
 end
 
 class TestAggregatingProcessor < Minitest::Test
-  class Metadata::AggregatingProcessor
-    attr_accessor :collector
+  def setup
+    @values = {scalar: 'Foo', set: [1, 2]}
   end
 
-  def setup
-    @values    = {scalar: 'Foo', set: [1, 2]}
-    @collector = ->(file, key) { @values[key] }
+  def new_processor(**keys)
+    # We must `eval` to get @values as the block is `instance_exec`’d in the Processor’s context.
+    eval "Metadata::AggregatingProcessor.new(**keys) { |file, key| #{@values}[key] }"
+  end
+
+  def test_exposes_keys_reader
+    processor = new_processor(@values)
+    assert_respond_to processor, :keys
+    refute_respond_to processor, :keys=
+    assert_equal @values, processor.keys
   end
 
   def test_retrieves_a_hash_of_values_indexed_on_keys
     keys      = {string: :scalar, array: :set}
-    processor = Metadata::AggregatingProcessor.new(**keys)
-    processor.collector = @collector
+    processor = new_processor(**keys)
     values    = processor.call(__FILE__)
     assert_instance_of Hash, values
     assert_equal keys.keys,  values.keys
   end
 
   def test_retrieves_and_merges_scalar_data_points
-    processor = Metadata::AggregatingProcessor.new(string: [:scalar, :scalar])
-    processor.collector = @collector
+    processor = new_processor(string: [:scalar, :scalar])
     values    = processor.call(__FILE__)
     assert_equal @values[:scalar], values[:string]
   end
 
   def test_retrieves_and_merges_array_data_points
-    processor = Metadata::AggregatingProcessor.new(array: [:set, :set])
-    processor.collector = @collector
+    processor = new_processor(array: [:set, :set])
     values    = processor.call(__FILE__)
     assert_equal @values[:set], values[:array]
   end
 
   def test_retrieves_and_merges_mixed_data_points
-    processor = Metadata::AggregatingProcessor.new(mix: [:scalar, :set])
-    processor.collector = @collector
+    processor = new_processor(mix: [:scalar, :set])
     values    = processor.call(__FILE__)
     assert_equal @values.values.flatten, values[:mix]
   end
+
+  def test_raises_argument_error_if_keys_or_block_missing
+    assert_raises(ArgumentError) { new_processor }
+    assert_raises(ArgumentError) { Metadata::AggregatingProcessor.new(@values) }
+  end
+
 end
 
 class TestSpotlightPropertiesProcessor < Minitest::Test
@@ -130,22 +139,26 @@ class TestSpotlightPropertiesProcessor < Minitest::Test
     @file.close
   end
 
+  def new_processor(**keys)
+    Metadata::SpotlightPropertiesProcessor.new(**keys)
+  end
+
   def test_retrieves_and_merges_scalar_data_points
-    values = Metadata::SpotlightPropertiesProcessor.new(name: 'kMDItemFSName').call(@file)
+    values = new_processor(name: 'kMDItemFSName').call(@file)
     assert_instance_of String, values[:name]
     assert_equal File.basename(@file.path), values[:name]
 
-    values = Metadata::SpotlightPropertiesProcessor.new(type: ['kMDItemContentType', 'kMDItemKind']).call(@file)
+    values = new_processor(type: ['kMDItemContentType', 'kMDItemKind']).call(@file)
     assert_instance_of Array, values[:type]
     assert_equal values[:type].compact.uniq.count, values[:type].count
   end
 
   def test_retrieves_and_merges_array_data_points
-    single = Metadata::SpotlightPropertiesProcessor.new(tree: 'kMDItemContentTypeTree').call(@file)
+    single = new_processor(tree: 'kMDItemContentTypeTree').call(@file)
     assert_instance_of Array, single[:tree]
     assert_equal single[:tree].compact.uniq.count, single[:tree].count
 
-    double = Metadata::SpotlightPropertiesProcessor.new(tree: ['kMDItemContentTypeTree', 'kMDItemContentTypeTree']).call(@file)
+    double = new_processor(tree: ['kMDItemContentTypeTree', 'kMDItemContentTypeTree']).call(@file)
     assert_instance_of Array, double[:tree]
     assert_equal single, double
   end
