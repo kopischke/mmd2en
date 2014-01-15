@@ -2,10 +2,15 @@
 require 'core_ext/io'
 
 module CoreExtensions
+  # Extensions to the core ARGF object.
+  # @see http://rubyit.wordpress.com/2011/07/25/ruby-and-argf/ Onteria on ARGF
+  # @author Martin Kopischke
+  # @version {CoreExtensions::VERSION}
   module ARGFParser
-    # Returns an Array of all files passed, plus text content, as Files open for reading.
+    # Returns an Array of files passed plus text content as files open for reading.
     # Does not hang when nothing is passed as it tests for blocking STDIN I/O.
-    # Hat tip Onteria, http://rubyit.wordpress.com/2011/07/25/ruby-and-argf/
+    # @param options [Hash] options to pass to File.open and IO.dump.
+    # @return [Array<File, Tempfile>] all files passed as Files, plus content on STDIN as Tempfile.
     def to_files(**options)
       files = []
       until ARGV.empty?   # files passed on command line

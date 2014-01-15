@@ -6,7 +6,10 @@ require 'core_ext/io'
 require 'core_ext/numeric'
 require 'core_ext/range'
 
-# Core Ruby classes extensions.
+# Extensions to core Ruby classes.
+# @author Martin Kopischke
+# @version {CoreExtensions::VERSION}
 module CoreExtensions
+  # Module version number.
   VERSION = '1.0.0'
 end

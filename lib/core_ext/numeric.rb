@@ -2,14 +2,15 @@
 require 'core_ext/range'
 
 module CoreExtensions
+  # Extensions to the core Numeric class.
+  # @author Martin Kopischke
+  # @version {CoreExtensions::VERSION}
   class ::Numeric
     # Transpose `self` to a value in `to_range` proportional to `self`’s position in `from_range`.
-    # @param from_range [Range] the numeric reference scale.
-    # @param to_range [Range] the numeric target scale.
+    # @param from_range [Range<Numeric>] the numeric reference scale.
+    # @param to_range [Range<Numeric>] the numeric target scale.
     # @return [Integer] if `self` and the transposed value of `self` are integral.
     # @return [Float] if either `self` or the transposed value of `self` is not integral.
-    # @author Martin Kopischke
-    # @version 2014-01-12
     def scale(from_range, to_range)
       ranges = [from_range, to_range]
       ranges.each do |r| r.is_a?(Range) or fail ArgumentError, "Not a Range: '#{r}'." end
