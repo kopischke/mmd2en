@@ -1,5 +1,4 @@
 # encoding: UTF-8
-require 'forwardable'
 
 # Quick and dirty semantic versioning class – see http://semver.org/.
 # Will recognize (and compare to) Strings and Numerics loosely matching the spec
@@ -8,9 +7,6 @@ require 'forwardable'
 # use the Version gem if you need greater capabilities.
 class SemanticVersion
   include Comparable
-
-  extend Forwardable
-  def_delegators :@version, :[], :keys, :values, :each
 
   def initialize(version)
     version  = String(version).strip
@@ -24,13 +20,29 @@ class SemanticVersion
     }
   end
 
-  def to_str
-    self.values.join('.')
+  def method_missing(symbol)
+    @version[symbol] || super
+  end
+  # All components of the semantic version number.
+  def to_a
+    @version.values
   end
 
-  alias_method :to_s, :to_str
+  alias_method :to_ary, :to_a
+
+  # All components of the semantic version number indexed by part name.
+  def to_hash
+    @version.dup
+  end
+
+  # The full semantic version number String matching the version.
+  def to_s
+    self.to_a.join('.')
+  end
+
+  alias_method :to_str, :to_s
 
   def <=>(version)
-    self.values <=> SemanticVersion.new(version).values
+    self.to_a <=> SemanticVersion.new(version).to_a
   end
 end
