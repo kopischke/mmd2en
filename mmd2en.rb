@@ -64,12 +64,6 @@ sources.each do |source|
   filename = nil
   metadata = {}
 
-  # Get merged file system metadata from the original files:
-  unless source.is_a?(Tempfile)
-    metadata = file_queue.compile(source)
-    filename = File.basename(source, '.*')
-  end
-
   # Skip files / streams with unknown encoding, as we cannot ensure conversion to UTF-8:
   # accept Rubys’s BOM recognition (which results in pos > 0), else check externally.
   unless source.pos > 0 || source_encoding = source.real_encoding(accept_dummy: false)
@@ -77,10 +71,16 @@ sources.each do |source|
     next
   end
 
+  # Get merged file system metadata from the original files:
+  unless source.is_a?(Tempfile)
+    metadata = file_queue.compile!(source)
+    filename = File.basename(source, '.*')
+  end
+
   # Get merged file / text content metadata from a temp UTF-8 copy:
   source_encoding and source.set_encoding(source_encoding)
   source = source.dump!(external_encoding: Encoding::UTF_8)
-  metadata.merge!(content_queue.compile(source))
+  metadata.merge!(content_queue.compile!(source))
 
   # Let MMD create a HTML output file:
   html = Tempfile.new([TEMPFILE_KEY, '.html'])

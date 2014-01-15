@@ -55,7 +55,7 @@ class TestProcessorQueue < Minitest::Test
       proc_3.expect :call, {'KEYWORDS' => ['baz', 'qux'], 'PUBLICATION DATE' => timestamp, author: 'Obi-Wan'}, [Tempfile]
       @queue << proc_3
 
-      metadata = @queue.compile(file)
+      metadata = @queue.compile!(file)
       assert_equal 5, metadata.count
       assert_equal 'Alternate title', metadata['title']
       assert_equal ['baz', 'qux'],    metadata['keywords']
@@ -80,7 +80,7 @@ class TestProcessorQueue < Minitest::Test
 
     Tempfile.open('TestProcessorQueue') do |file|
       assert_output('', err_msg << $/) {
-        assert_equal data_1.merge(data_2), @queue.compile(file)
+        assert_equal data_1.merge(data_2), @queue.compile!(file)
       }
     end
   end

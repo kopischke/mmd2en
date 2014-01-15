@@ -13,7 +13,7 @@ module Metadata
 
     # Call all processors in order on `file`, normalizing and merging their returned metadata.
     # Processors raising a StandardError are skipped with a warning message.
-    def compile(file)
+    def compile!(file)
       @processors.reduce({}) {|hash, processor|
         begin
           metadata, content = processor.call(file)
