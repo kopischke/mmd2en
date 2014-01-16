@@ -1,49 +1,81 @@
 # encoding: UTF-8
-
-# Quick an dirty module to sweeten AppleScript handling from Ruby via `osascript`.
-# Allows creation of AppleScript data types (actually: a suitable string representation)
-# from Ruby objects and straightforward script execution via `osascript`.
 require 'date'
 require 'forwardable'
 require 'pathname'
 require 'shellrun'
 require 'tempfile'
 
+# Quick an dirty module to sweeten AppleScript handling from Ruby via `osascript`.
+# Allows creation of AppleScript data types (actually: a suitable string representation)
+# from Ruby objects and straightforward script execution via `osascript`.
+# @author Martin Kopischke
+# @version {AppleScripter::VERSION}
 module AppleScripter
+  # The module version.
   VERSION = '1.0.0'
 
+  # Included in classes mapping directly to their AppleScript counterparts.
   module Literal
+    # @return [String] the representation of the object suitable for an AppleScript command.
     def to_applescript
       String(self)
     end
   end
 
-  # => Literal string representations
-  class ::Integer;    include Literal; end # => AppleScript integer
-  class ::Float;      include Literal; end # => AppleScript real
-  class ::TrueClass;  include Literal; end # => AppleScript boolean
-  class ::FalseClass; include Literal; end # => AppleScript boolean
-  class ::Symbol;     include Literal; end # => AppleScript literal (careful with that one!)
+  # @!method to_applescript
+  #   Convert to the String representation of an AppleScript integer.
+  #   @return (see AppleScripter::Literal#to_applescript)
+  class ::Integer; include Literal; end
 
-  class ::Object # => default to escaped string representation
+  # @!method to_applescript
+  #   Convert to the String representation of an AppleScript real.
+  #   @return (see AppleScripter::Literal#to_applescript)
+  class ::Float; include Literal; end
+
+  # @!method to_applescript
+  #   Convert to the String representation of an AppleScript boolean.
+  #   @return (see AppleScripter::Literal#to_applescript)
+  class ::TrueClass; include Literal; end
+
+  # @!method to_applescript
+  #   Convert to the String representation of an AppleScript boolean.
+  #   @return (see AppleScripter::Literal#to_applescript)
+  class ::FalseClass; include Literal; end
+
+  # @!method to_applescript
+  #   Convert to the String representation of an AppleScript literal (use carefully).
+  #   @return (see AppleScripter::Literal#to_applescript)
+  class ::Symbol; include Literal; end
+
+  class ::Object
+    # Convert to String representation.
+    # @return [String] the String representation of the Object.
     def to_applescript
       String(self).to_applescript
     end
   end
 
-  class ::String # => AppleScript escaped string
+  class ::String
+    # Convert to an escaped AppleScript String.
+    # @return [String] the escaped AppleScript String (including quotes).
     def to_applescript
       '"' << self.gsub(/(?=["\\])/, '\\') << '"'
     end
   end
 
-  module ::Enumerable # => AppleScript list, all elements converted
+  module ::Enumerable
+    # Convert to the String representation of an AppleScript list.
+    # All elements are converted to their AppleScript representation.
+    # @return [String] an AppleScript *list* representation.
     def to_applescript
       '{' << self.map(&:to_applescript).join(', ') << '}'
     end
   end
 
-  class ::Hash # => AppleScript record, all keys sanitized and values converted
+  class ::Hash
+    # Convert to the String representation of an AppleScript record.
+    # All keys are sanitized and all values re converted to their AppleScript representation.
+    # @return [String] an AppleScript *record* representation.
     def to_applescript
       a = self.map do |k,v|
         k = String(k).gsub(/[^_[:alnum:]]/, '_')    # replace invalid key body chars by underscore
@@ -54,7 +86,10 @@ module AppleScripter
     end
   end
 
-  class ::DateTime # => AppleScript date (which is a datetime anyway)
+  class ::DateTime
+    # Convert to the String representation of an AppleScript date.
+    # @note AppleScript dates most closely match Ruby’s DateTime, not Date.
+    # @return [String] an AppleScript *date* representation.
     def to_applescript # => "date \"<local format date>\""
       'date "' << OSARunner.new.run_script(*[
           "set theDate to current date",
@@ -69,33 +104,52 @@ module AppleScripter
     end
   end
 
-  class ::Date # => AppleScript date via cast to DateTime (see above)
+  class ::Date
+    # Convert to the String representation of an AppleScript date.
+    # @note (see DateTime#to_applescript)
+    # @return (see DateTime#to_applescript)
     def to_applescript
       self.to_datetime.to_applescript
     end
   end
 
-  class ::Pathname # => AppleScript file (as that need not exist in the filesystem)
+  class ::Pathname
+    # Convert to the String representation of an AppleScript file.
+    # @note AppleScript’s *file* objects do not need to exist in the filesystem.
+    # @return [String] an AppleScript *file* representation.
     def to_applescript
       'POSIX file ' << String(self.expand_path).to_applescript
     end
   end
 
-  class ::File # => ApplesScript alias (as that needs to exist, like Ruby’s File)
+  class ::File
+    # Convert to the String representation of an ApplesScript alias.
+    # @note AppleScript’s *alias* objects need to exist, like Ruby’s Files.
+    # @return [String] an AppleScript *alias* representation.
     def to_applescript
       Pathname.new(self.path).to_applescript << ' as alias'
     end
   end
 
-  # Always run AppleScript commands via Tempfile to avoid escaping conflicts between the shell, AS and AS strings
+  # Run AppleScript scripts via `osascript` with convenience.
   class OSARunner
     extend Forwardable
+
+    # @!attribute exitstatus [r]
+    #   @return (see ShellRunner#exitstatus)
+    # @!attribute ok? [r]
+    #   @return (see ShellRunner#ok?)
     def_delegators :@sh, :exitstatus, :ok?
 
     def initialize
       @sh = ShellRunner.new
     end
 
+    # Run a literal AppleScript.
+    # @note Scripts are always run via Tempfile to avoid escaping conflicts between the shell,
+    #   AppleScript and AppleScript strings.
+    # @param lines [Array<#to_s>] the lines of the script to execute.
+    # @return [String] the last output of the script.
     def run_script(*lines)
       Tempfile.open('AppleScripter') do |file|
         file.write(lines.join($/) << $/)

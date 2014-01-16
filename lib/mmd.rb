@@ -5,15 +5,38 @@ require 'semver'
 require 'shellrun'
 
 # Wrapper for the `multimarkdown` binary: get best version, get metadata, convert files.
+# @author Martin Kopischke
+# @version 1.0.0
 class MultiMarkdownParser
+  # Minimum `multimarkdown` version for metadata collection support.
   MINIMUM_VERSION  = '4.0.0'
 
+  # Optimal `multimarkdown` version for best metadata collection support.
   BASELINE_VERSION = '4.3.0'
+
+  # @return [SemanticVersion] the version of the used binary.
   attr_reader :version
 
   extend Forwardable
-  def_delegators :@bin, :to_path, :to_s, :expand_path, :realpath, :realdirpath, :dirname, :basename, :parent
-  def_delegators :@bin, :size, :stat, :atime, :ctime, :owned?, :grpowned?, :symlink?, :readlink
+  # @!macro [attach] delegate
+  #   @!method ${2}
+  #     Equivalent to `Pathname#$2` for the `multimarkdown` binary path.
+  def_delegator :@bin, :to_path
+  def_delegator :@bin, :to_s
+  def_delegator :@bin, :expand_path
+  def_delegator :@bin, :realpath
+  def_delegator :@bin, :realdirpath
+  def_delegator :@bin, :dirname
+  def_delegator :@bin, :basename
+  def_delegator :@bin, :parent
+  def_delegator :@bin, :size
+  def_delegator :@bin, :stat
+  def_delegator :@bin, :atime
+  def_delegator :@bin, :ctime
+  def_delegator :@bin, :owned?
+  def_delegator :@bin, :grpowned?
+  def_delegator :@bin, :symlink?
+  def_delegator :@bin, :readlink
 
   alias_method :bin, :to_path
   alias_method :to_str, :to_s
@@ -47,6 +70,11 @@ class MultiMarkdownParser
     @bin     = Pathname.new(best_bin[0])
   end
 
+  # Load MultiMarkdown metadata from a file.
+  # @param file [File, String] the file containing the metadata.
+  # @param fallback_keys [Array<#to_s>] the metadata keys to query by name
+  #   if the full list of keys contained in `file` cannot be retrieved.
+  # @return [Hash] the collected metadata.
   def load_file_metadata(file, *fallback_keys)
     path     = File.expand_path(file)
     metadata = {}
@@ -66,6 +94,11 @@ class MultiMarkdownParser
     metadata
   end
 
+  # Convert a MultiMarkdown file to a defined output format.
+  # @param markdown_file [File, String] the file to convert.
+  # @param to_format [Symbol] an output format support by `multimarkdown` (defaults to html).
+  # @param output_file [File, String] the file to write the output to (STDOUT if nil).
+  # @param full_document [Boolean] generate a full HTML document (defaults to true).
   def convert_file(markdown_file, to_format: :html, output_file: nil, full_document: false)
     opts = []
     opts.push('-t', String(to_format).downcase)    if to_format
@@ -75,6 +108,9 @@ class MultiMarkdownParser
   end
 
   private
+  # Create a nicely formatted plain text list from arguments.
+  # @param args [Array<#to_s>] the list elements to join.
+  # @return [String] the formatted plain text list of all *args`.
   def list_join(*args)
     args.count == 1 ? " #{args[0]}" : "#{$/}* #{args.join("#{$/}* ")}"
   end

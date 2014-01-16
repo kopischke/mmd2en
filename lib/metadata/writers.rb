@@ -6,12 +6,33 @@ require 'pathname'
 require 'time'
 
 module Metadata
-  # AppleScript based metadata setter.
+  # AppleScript based Evernote metadata setter.
+  # @author Martin Kopischke
+  # @version {Metadata::VERSION}
   class Writer
     include AppleScripter
-    attr_reader :key, :type, :item_type, :sieve
     include Metadata::Helpers
 
+    # @return [String] the metadata key name.
+    attr_reader :key
+
+    # @return [Symbol] the data type of the metadata associated with {#key}.
+    #   One of: :text, :date, :file, :list.
+    attr_reader :type
+
+    # @return [Symbol] the data type of the elements of a *:list* metadata key.
+    #   One of: :text, :date, :file.
+    attr_reader :item_type
+
+    # @return [EDAM::Sieve] the EDAM sanitizer and validator to use.
+    attr_reader :sieve
+
+    # @param key [String] the metadata key name.
+    # @param type [Symbol] the data type of the metadata associated with `key`.
+    #   One of: :text, :date, :file, :list.
+    # @param item_type [Symbol] the data type of the elements of a *:list* `key`.
+    #   One of: :text, :date, :file.
+    # @param sieve [EDAM::Sieve] the EDAM sanitizer and validator to use.
     def initialize(key, type: :text, item_type: :text, sieve: nil)
       @key       = key.downcase.strip
       @type      = type.downcase.to_sym
@@ -19,7 +40,7 @@ module Metadata
       @sieve     = sieve
       @runner    = EvernoteRunner.new
 
-      # normalize input data to expected type
+      # lambdas used to normalize input data to expected type
       @normalizers = {
         list:  ->(input) { # split textual input on newlines and eventual StringSieve forbidden chars
           split = @sieve && @sieve.item_sieve.is_a?(EDAM::StringSieve) ? /[#{@sieve.item_sieve.also_strip}\n]/ : $/
@@ -32,7 +53,7 @@ module Metadata
         other: ->(input) { fail "unknown metadata type '#{type}'" }
       }
 
-      # generate AppleScript command to write metadata
+      # lambdas used to generate the AppleScript command to write metadata
       @writers = {
         'default'     => ->(value) { %Q{set #{@key} to #{value.to_applescript}} },
         'attachments' => ->(files) { files.map {|f| %Q{append attachment #{f.to_applescript}} } },
@@ -41,10 +62,17 @@ module Metadata
       }
     end
 
-    # Will normalize `value` to canonical formats depending on `@type`
-    # (with member data of `:list` types being normalized according to `@item_type`),
-    # apply the EDAM::Sieve type given in `@sieve` to the result
-    # and write the resulting value, if not nil, to `@key` of `note`.
+    # Write an Evernote note’s metadata.
+    #
+    # Will normalize `value` to the canonical format matching {#type}
+    #   (with member data of `:list` types being normalized according to {#item_type}),
+    #   apply the designated {#sieve} to the normalized input
+    #   and write the resulting value, if not nil, to {#key} of `note`.
+    #
+    # @param note [Metadata::Helpers::NotePath] the note whose metadata is to be written.
+    # @param value [Object] the value to set `note`’s {#key} to.
+    # @return [Metadata::Helpers::NotePath] if no error occurs, the created or updated note.
+    # @return [Metadata::Helpers::NotePath] if a Runtime error occurs, the original note.
     def write(note, value = nil)
       input = @normalizers.fetch(@type, @normalizers[:other]).call(value)
       input = @sieve.strain(input) if @sieve
@@ -69,6 +97,11 @@ module Metadata
     end
 
     private
+    # Ensure we have valid Evernote objects, creating them if necessary.
+    # @param assignee [String] the Applescript list variable to return.
+    # @param type [String] the type (AppleScript class) of Evernote object `names` designate.
+    # @param names [Array<String>] the names of Evernote objects of type `object` to retrieve or create.
+    # @return [Array<String>] the lines of an AppleScript command suitable for use with {#run_script}.
     def acquire(assignee, type, *names)
       [
         %Q{set #{assignee} to {}},
