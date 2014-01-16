@@ -1,46 +1,31 @@
 # encoding: UTF-8
-require 'core_ext/encoding'
-require 'shellrun'
+require 'file_encoding/queue'
+require 'file_encoding/guessers'
 
 module CoreExtensions
+  # Extensions to the core File class.
+  # @author Martin Kopischke
+  # @version {CoreExtensions::VERSION}
   class ::File
-    # Try to get the real encoding of a file (returns an Encoding, or nil).
-    def self.real_encoding(path, accept_dummy: true)
-      path = File.expand_path(path)
-      sh   = ShellRunner.new
-
-      file_guess = ->(fpath) {
-        if sh.run_command('which', 'file').chomp.empty?
-          warn 'File encoding guess skipped: `file` utility not found.'
-          return nil
-        else
-          cset = sh.run_command('file', '-I', fpath).chomp.split('charset=').last
-          fail "Error guessing file encoding: `file` returned #{sh.exitstatus}." unless sh.ok?
-          Encoding.find_iana_charset(cset) unless cset.match(/binary/i)
-        end
-      }
-
-      apple_text_encoding = ->(fpath) {
-        if sh.run_command('which', 'xattr').chomp.empty?
-          warn 'com.apple.TextEncoding test skipped: `xattr` utility not found.'
-          return nil
-        else
-          cset = sh.run_command('xattr', '-p', 'com.apple.TextEncoding', fpath, :'2>/dev/null').chomp.split(';').first
-          Encoding.find_iana_charset(cset) unless cset.nil?
-        end
-      }
-
-      # note Apple’s TextEncoding lookup skews towards dummy UTF forms
-      [file_guess, apple_text_encoding].each do |test|
-        enc = test.call(path)
-        return enc unless enc.nil? || enc.dummy? && !accept_dummy
-      end
-      nil
+    # Guess the text content encoding of a file.
+    # @param file [File, String] the file whose encoding is to be guessed.
+    # @param guessers [Array<FileEncoding::Guesser>] the encoding guessers to use
+    #   (defaults to {FileEncoding::Guessers.default_set}).
+    # @param guess_options [Hash] as in {FileEncoding::GuesserQueue#initialize}.
+    # @return [Encoding] if an encoding could be guessed.
+    # @return [nil] if no encoding could be guessed or `file` is not an existing file.
+    def self.guess_encoding(file, *guessers, **guess_options)
+      guessers = FileEncoding::Guessers.default_set if guessers.empty?
+      queue    = FileEncoding::GuesserQueue.new(*guessers, **guess_options)
+      queue.process(file) if File.file?(file)
     end
 
-    # Try to get the real external encoding of the File object.
-    def real_encoding(**kwargs)
-      File.real_encoding(self.path, **kwargs)
+    # Guess the file’s text content encoding.
+    # @param guessers [Array] as in {File.guess_encoding}.
+    # @param guess_options [Hash] as in {File.guess_encoding}.
+    # @return (see File.guess_encoding)
+    def guess_encoding(*guessers, **guess_options)
+      File.guess_encoding(self, *guessers, **guess_options)
     end
 
     # Get the expanded form of the path used to create the file.
