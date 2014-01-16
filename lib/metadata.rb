@@ -8,5 +8,6 @@ require 'metadata/writers'
 # @author Martin Kopischke
 # @version {Metadata::VERSION}
 module Metadata
+  # Module version.
   VERSION = '1.0.0'
 end

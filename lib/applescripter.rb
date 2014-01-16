@@ -25,28 +25,35 @@ module AppleScripter
   # @!method to_applescript
   #   Convert to the String representation of an AppleScript integer.
   #   @return (see AppleScripter::Literal#to_applescript)
+  # @!macro [new] to_applescript
+  #   Extension adding a #to_applescript conversion method to core Ruby classes.
   class ::Integer; include Literal; end
 
   # @!method to_applescript
   #   Convert to the String representation of an AppleScript real.
   #   @return (see AppleScripter::Literal#to_applescript)
+  # @!macro to_applescript
   class ::Float; include Literal; end
 
   # @!method to_applescript
   #   Convert to the String representation of an AppleScript boolean.
   #   @return (see AppleScripter::Literal#to_applescript)
+  # @!macro to_applescript
   class ::TrueClass; include Literal; end
 
   # @!method to_applescript
   #   Convert to the String representation of an AppleScript boolean.
   #   @return (see AppleScripter::Literal#to_applescript)
+  # @!macro to_applescript
   class ::FalseClass; include Literal; end
 
   # @!method to_applescript
   #   Convert to the String representation of an AppleScript literal (use carefully).
   #   @return (see AppleScripter::Literal#to_applescript)
+  # @!macro to_applescript
   class ::Symbol; include Literal; end
 
+  # @!macro to_applescript
   class ::Object
     # Convert to String representation.
     # @return [String] the String representation of the Object.
@@ -55,6 +62,7 @@ module AppleScripter
     end
   end
 
+  # @!macro to_applescript
   class ::String
     # Convert to an escaped AppleScript String.
     # @return [String] the escaped AppleScript String (including quotes).
@@ -63,6 +71,7 @@ module AppleScripter
     end
   end
 
+  # @!macro to_applescript
   module ::Enumerable
     # Convert to the String representation of an AppleScript list.
     # All elements are converted to their AppleScript representation.
@@ -72,6 +81,7 @@ module AppleScripter
     end
   end
 
+  # @!macro to_applescript
   class ::Hash
     # Convert to the String representation of an AppleScript record.
     # All keys are sanitized and all values re converted to their AppleScript representation.
@@ -86,6 +96,7 @@ module AppleScripter
     end
   end
 
+  # @!macro to_applescript
   class ::DateTime
     # Convert to the String representation of an AppleScript date.
     # @note AppleScript dates most closely match Ruby’s DateTime, not Date.
@@ -104,6 +115,7 @@ module AppleScripter
     end
   end
 
+  # @!macro to_applescript
   class ::Date
     # Convert to the String representation of an AppleScript date.
     # @note (see DateTime#to_applescript)
@@ -113,6 +125,7 @@ module AppleScripter
     end
   end
 
+  # @!macro to_applescript
   class ::Pathname
     # Convert to the String representation of an AppleScript file.
     # @note AppleScript’s *file* objects do not need to exist in the filesystem.
