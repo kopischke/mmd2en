@@ -9,6 +9,9 @@ module Metadata
     def initialize
       @sh = ShellRunner.new
     end
+    def call(file)
+      nil
+    end
   end
 
   class AggregatingProcessor < Processor
