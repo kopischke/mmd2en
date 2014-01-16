@@ -38,7 +38,7 @@ title_writer = Metadata::Writer.new('title', sieve: title_sieve )
 book_sieve   = EDAM::StringSieve.new(max_chars: EDAM::NOTEBOOK_NAME_LEN_MAX)
 book_writer  = Metadata::Writer.new('notebook', sieve: book_sieve)
 
-tag_sieve    = EDAM::StringSieve.new(max_chars: EDAM::TAG_NAME_LEN_MAX, strip_chars: ',')
+tag_sieve    = EDAM::StringSieve.new(max_chars: EDAM::TAG_NAME_LEN_MAX, also_strip: ',')
 tags_sieve   = EDAM::ArraySieve.new(max_items: EDAM::NOTE_TAGS_MAX, item_sieve: tag_sieve)
 tags_writer  = Metadata::Writer.new('tags', type: :list, sieve: tags_sieve)
 

@@ -7,7 +7,7 @@ class TestEDAMStringSieve < Minitest::Test
     @max_length = 12
     @min_length = 3
     @default    = EDAM::StringSieve.new
-    @custom     = EDAM::StringSieve.new(min_chars: @min_length, max_chars: @max_length, strip_chars: ';_')
+    @custom     = EDAM::StringSieve.new(min_chars: @min_length, max_chars: @max_length, also_strip: ';_')
     @ellipsis   = '…' # default ellipsis character
   end
 
@@ -70,7 +70,7 @@ class TestEDAMArraySieve < Minitest::Test
 
   def test_applies_the_sieve_designated_in_item_sieve_to_all_elements
     items      = ['foo', 'bar;', 'bingobongo']
-    item_sieve = EDAM::StringSieve.new(max_chars: 6, strip_chars: ';')
+    item_sieve = EDAM::StringSieve.new(max_chars: 6, also_strip: ';')
     list_sieve = EDAM::ArraySieve.new(item_sieve: item_sieve)
     assert_equal items.map {|e| item_sieve.strain(e) }, list_sieve.strain(items)
   end
