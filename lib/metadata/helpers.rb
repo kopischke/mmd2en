@@ -25,11 +25,17 @@ module Metadata
     class NotePath
       attr_reader :notebook, :id
 
-      def initialize(path_string)
-        note_path = path_string.split($/)
-        @notebook = note_path[0]
-        @id       = note_path[1]
+      def initialize(path)
+        @notebook, @id = String(path).split($/)
       end
+
+      # Get the note path in the String format parsed by #new.
+      # @return [String] “Notebook\nID”.
+      def to_s
+        [@notebook, @id].join($/)
+      end
+
+      alias_method :to_str, :to_s
     end
   end
 end
