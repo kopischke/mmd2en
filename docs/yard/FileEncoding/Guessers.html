@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>
+  Module: FileEncoding::Guessers
+  
+    &mdash; Documentation by YARD 0.8.7.3
+  
+</title>
+
+  <link rel="stylesheet" href="../css/style.css" type="text/css" charset="utf-8" />
+
+  <link rel="stylesheet" href="../css/common.css" type="text/css" charset="utf-8" />
+
+<script type="text/javascript" charset="utf-8">
+  hasFrames = window.top.frames.main ? true : false;
+  relpath = '../';
+  framesUrl = "../frames.html#!" + escape(window.location.href);
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="../js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="../js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div id="header">
+      <div id="menu">
+  
+    <a href="../_index.html">Index (G)</a> &raquo;
+    <span class='title'><span class='object_link'><a href="../FileEncoding.html" title="FileEncoding (module)">FileEncoding</a></span></span>
+     &raquo; 
+    <span class="title">Guessers</span>
+  
+
+  <div class="noframes"><span class="title">(</span><a href="." target="_top">no frames</a><span class="title">)</span></div>
+</div>
+
+      <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="../class_list.html">
+      Class List
+    </a>
+  
+    <a class="full_list_link" id="method_list_link"
+        href="../method_list.html">
+      Method List
+    </a>
+  
+    <a class="full_list_link" id="file_list_link"
+        href="../file_list.html">
+      File List
+    </a>
+  
+</div>
+      <div class="clear"></div>
+    </div>
+
+    <iframe id="search_frame"></iframe>
+
+    <div id="content"><h1>Module: FileEncoding::Guessers
+  
+  
+  
+</h1>
+
+<dl class="box">
+  
+  
+    
+  
+    
+  
+  
+  
+    <dt class="r1 last">Defined in:</dt>
+    <dd class="r1 last">lib/file_encoding/guessers.rb<span class="defines">,<br />
+  lib/file_encoding/guessers/cheap.rb,<br /> lib/file_encoding/guessers/platform.rb,<br /> lib/file_encoding/guessers/expensive.rb</span>
+</dd>
+  
+</dl>
+<div class="clear"></div>
+
+<h2>Overview</h2><div class="docstring">
+  <div class="discussion">
+    <p>Guesser instance management library.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Author:</p>
+<ul class="author">
+  
+    <li>
+      
+      
+      
+      
+        
+        <div class='inline'><p>Martin Kopischke</p>
+</div>
+      
+    </li>
+  
+</ul>
+<p class="tag_title">Version:</p>
+<ul class="version">
+  
+    <li>
+      
+      
+      
+      
+        
+        <div class='inline'><p><span class='object_link'><a href="../FileEncoding.html#VERSION-constant" title="FileEncoding::VERSION (constant)">VERSION</a></span></p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><h2>Defined Under Namespace</h2>
+<p class="children">
+  
+    
+      <strong class="modules">Modules:</strong> <span class='object_link'><a href="Guessers/Cheap.html" title="FileEncoding::Guessers::Cheap (module)">Cheap</a></span>, <span class='object_link'><a href="Guessers/Expensive.html" title="FileEncoding::Guessers::Expensive (module)">Expensive</a></span>, <span class='object_link'><a href="Guessers/Platform.html" title="FileEncoding::Guessers::Platform (module)">Platform</a></span>
+    
+  
+    
+  
+</p>
+
+
+
+
+
+
+
+  
+    <h2>
+      Class Method Summary
+      <small>(<a href="#" class="summary_toggle">collapse</a>)</small>
+    </h2>
+
+    <ul class="summary">
+      
+        <li class="public ">
+  <span class="summary_signature">
+    
+      <a href="#default_set-class_method" title="default_set (class method)">+ (Array) <strong>default_set</strong> </a>
+    
+
+    
+  </span>
+  
+  
+  
+  
+  
+  
+  
+
+  
+    <span class="summary_desc"><div class='inline'><p>The default set of encoding guessers in recommended processing order.</p>
+</div></span>
+  
+</li>
+
+      
+    </ul>
+  
+
+
+
+  <div id="class_method_details" class="method_details_list">
+    <h2>Class Method Details</h2>
+
+    
+      <div class="method_details first">
+  <h3 class="signature first" id="default_set-class_method">
+  
+    + (<tt>Array</tt>) <strong>default_set</strong> 
+  
+
+  
+
+  
+</h3><div class="docstring">
+  <div class="discussion">
+    <p>Returns the default set of encoding guessers in recommended processing order.</p>
+
+
+  </div>
+</div>
+<div class="tags">
+  
+<p class="tag_title">Returns:</p>
+<ul class="return">
+  
+    <li>
+      
+      
+        <span class='type'>(<tt>Array</tt>)</span>
+      
+      
+      
+        &mdash;
+        <div class='inline'><p>the default set of encoding guessers in recommended processing order.</p>
+</div>
+      
+    </li>
+  
+</ul>
+
+</div><table class="source_code">
+  <tr>
+    <td>
+      <pre class="lines">
+
+
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre>
+    </td>
+    <td>
+      <pre class="code"><span class="info file"># File 'lib/file_encoding/guessers.rb', line 12</span>
+
+<span class='kw'>def</span> <span class='kw'>self</span><span class='period'>.</span><span class='id identifier rubyid_default_set'>default_set</span>
+  <span class='lbracket'>[</span><span class='rbracket'>]</span><span class='period'>.</span><span class='id identifier rubyid_tap'>tap</span> <span class='lbrace'>{</span><span class='op'>|</span><span class='id identifier rubyid_set'>set</span><span class='op'>|</span>
+    <span class='id identifier rubyid_set'>set</span> <span class='op'>&lt;&lt;</span> <span class='const'>Cheap</span><span class='op'>::</span><span class='const'>CORE_BOM</span>
+    <span class='id identifier rubyid_set'>set</span> <span class='op'>&lt;&lt;</span> <span class='const'>Cheap</span><span class='op'>::</span><span class='const'>MORE_BOM</span>
+    <span class='id identifier rubyid_set'>set</span> <span class='op'>&lt;&lt;</span> <span class='const'>Platform</span><span class='op'>::</span><span class='const'>FILE</span>
+    <span class='id identifier rubyid_set'>set</span> <span class='op'>&lt;&lt;</span> <span class='const'>Platform</span><span class='op'>::</span><span class='const'>APPLE_XATTR</span>
+    <span class='id identifier rubyid_set'>set</span> <span class='op'>&lt;&lt;</span> <span class='const'>Expensive</span><span class='op'>::</span><span class='const'>ASCII</span>
+    <span class='id identifier rubyid_set'>set</span> <span class='op'>&lt;&lt;</span> <span class='const'>Expensive</span><span class='op'>::</span><span class='const'>UTF</span>
+    <span class='id identifier rubyid_set'>set</span> <span class='op'>&lt;&lt;</span> <span class='const'>Expensive</span><span class='op'>::</span><span class='const'>LATIN</span>
+  <span class='rbrace'>}</span>
+<span class='kw'>end</span></pre>
+    </td>
+  </tr>
+</table>
+</div>
+    
+  </div>
+
+</div>
+
+    <div id="footer">
+  Generated on Thu Jan 16 03:32:44 2014 by
+  <a href="http://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.8.7.3 (ruby-2.0.0).
+</div>
+
+  </body>
+</html>
