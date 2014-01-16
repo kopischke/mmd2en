@@ -10,13 +10,14 @@ module Metadata
   class Writer
     include AppleScripter
     attr_reader :key, :type, :item_type, :sieve
+    include Metadata::Helpers
 
     def initialize(key, type: :text, item_type: :text, sieve: nil)
-      @key       = key.strip
+      @key       = key.downcase.strip
       @type      = type.downcase.to_sym
       @item_type = item_type.downcase.to_sym if type == :list
       @sieve     = sieve
-      @runner    = Helpers::EvernoteRunner.new
+      @runner    = EvernoteRunner.new
 
       # normalize input data to expected type
       @normalizers = {
@@ -35,8 +36,8 @@ module Metadata
       @writers = {
         'default'     => ->(value) { %Q{set #{@key} to #{value.to_applescript}} },
         'attachments' => ->(files) { files.map {|f| %Q{append attachment #{f.to_applescript}} } },
-        'notebook'    => ->(book)  { [acquire('theBook', 'notebook', book), %Q{move it to first item of theBook}].flatten },
-        'tags'        => ->(tags)  { [acquire('theTags', 'tag', *tags), %Q{assign theTags to it}].flatten }
+        'notebook'    => ->(book)  { acquire('theBook', 'notebook', book) << %Q{move it to first item of theBook} },
+        'tags'        => ->(tags)  { acquire('theTags', 'tag', *tags)     << %Q{assign theTags to it} }
       }
     end
 
@@ -64,18 +65,18 @@ module Metadata
       return note # fallback input for next writer in chain
 
     else
-      return Metadata::Helpers::NotePath.new(output)
+      return NotePath.new(output)
     end
 
     private
-    def acquire(assignee, object, *names)
+    def acquire(assignee, type, *names)
       [
         %Q{set #{assignee} to {}},
         %Q{repeat with theName in #{Array(names).to_applescript}},
         %Q{try},
-        %Q{#{@runner.tell_command} to set end of #{assignee} to #{object} theName},
+        %Q{#{@runner.tell_command} to set end of #{assignee} to #{type} theName},
         %Q{on error},
-        %Q{#{@runner.tell_command} to set end of #{assignee} to (make new #{object} with properties {name:theName})},
+        %Q{#{@runner.tell_command} to set end of #{assignee} to (make new #{type} with properties {name:theName})},
         %Q{end try},
         %Q{end repeat}
       ]
