@@ -2,7 +2,7 @@
 
 # Quick and dirty semantic versioning class: will recognize (and compare to)
 # anything resembling a semantic version String after conversion (“resembling”
-# because trailing 0s can be omitted, i.e. “4” will be considered as “4.0.0”).
+# because trailing 0s can be omitted, i.e. “4” will be equivalent to “4.0.0”).
 # @note all parts are read-only and build information is dropped
 #   – use a gem (like *Version* or *Versionify*) if you need greater capabilities.
 # @see http://semver.org/ Semantic versioning specification.
@@ -49,18 +49,18 @@ class SemanticVersion
   alias_method :to_ary, :to_a
 
   # All components of the semantic version number indexed by part name.
-  # @return [Hash<Integer>] indexed on :major, :minor, :patch.
-  def to_hash
+  # @return [Hash<Symbol, Integer>] indexed on :major, :minor, :patch.
+  def to_h
     @version.dup
   end
+
+  alias_method :to_hash, :to_h
 
   # The full semantic version number String matching the version.
   # @return [String] the canonical string representation.
   def to_s
     self.to_a.join('.')
   end
-
-  alias_method :to_str, :to_s
 
   # Comparable base method.
   # @param (see #initialize)
