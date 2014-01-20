@@ -1,5 +1,6 @@
 # encoding: UTF-8
 require 'core_ext/argf'
+require 'core_ext/array'
 require 'core_ext/encoding'
 require 'core_ext/file'
 require 'core_ext/io'
