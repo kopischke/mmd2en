@@ -3,6 +3,13 @@ require_relative 'test_helper'
 require 'semver'
 
 class TestSemanticVersion < Minitest::Test
+  def setup
+    @test_hash = {major: rand(1..9), minor: rand(1..20), patch: rand(1..100)}
+    @test_ary  = @test_hash.values
+    @test_str  = @test_ary.join('.')
+    @test_ver  = SemanticVersion.new("#{@test_str}-alpha4")
+  end
+
   def test_parses_a_full_string
     v = SemanticVersion.new('1.5.3')
     assert_equal 1, v.major
@@ -46,18 +53,20 @@ class TestSemanticVersion < Minitest::Test
     assert_equal 0,  v.patch
   end
 
-  def test_converts_to_a_string_explicitly_and_implicitly
+  def test_converts_to_string_explicitly
     version = '12.0.3'
-    assert_equal '9.12.4', SemanticVersion.new('9.12.4-alpha4').to_s
-    assert_equal "Version #{version}.", ('Version ' << SemanticVersion.new(version) << '.')
+    assert_equal @test_str, @test_ver.to_s
+    assert_equal "Version #{version}.", "Version #{SemanticVersion.new(version)}."
   end
 
   def test_converts_to_array
-    assert_equal [9, 12, 4], SemanticVersion.new('9.12.4-alpha4').to_a
+    assert_equal @test_ary, @test_ver.to_a
+    assert_equal @test_ary, @test_ver.to_ary
   end
 
   def test_converts_to_hash
-    assert_equal({major: 9, minor: 12, patch: 4}, SemanticVersion.new('9.12.4-alpha4').to_hash)
+    assert_equal(@test_hash, @test_ver.to_h)
+    assert_equal(@test_hash, @test_ver.to_hash)
   end
 
   def test_raises_error_if_passed_invalid_version_representation
@@ -65,6 +74,10 @@ class TestSemanticVersion < Minitest::Test
     assert_raises(ArgumentError) { SemanticVersion.new([1, 2, 0]) }
     assert_raises(ArgumentError) { SemanticVersion.new('')        }
     assert_raises(ArgumentError) { SemanticVersion.new(nil)       }
+  end
+
+  def test_implements_comparable
+    Comparable.instance_methods.each do |method| assert_respond_to @test_ver, method end
   end
 
   def test_compares_to_other_versions
@@ -77,24 +90,5 @@ class TestSemanticVersion < Minitest::Test
     assert_equal -1, (vc <=> va)
     assert_equal  1, (vb <=> vc)
     assert_equal -1, (vc <=> va)
-  end
-
-  def test_implements_comparable
-    va = SemanticVersion.new('24.22.1-alpha+build123')
-    vb = SemanticVersion.new('24.22.1')
-    vc = SemanticVersion.new(24.22)
-    assert_operator va, :>=, vb
-    assert_operator va, :<=, vb
-    refute_operator va, :>,  vb
-    refute_operator va, :>,  vb
-    assert_operator va, :==, vb
-    refute_operator va, :!=, vb
-    assert_operator va, :>=, vc
-    assert_operator va, :>=, vc
-    refute_operator va, :<=, vc
-    assert_operator va, :> , vc
-    refute_operator va, :< , vc
-    refute_operator va, :==, vc
-    assert_operator va, :!=, vc
   end
 end
