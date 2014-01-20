@@ -18,9 +18,9 @@ module CoreExtensions
       temp.close # finalize write
       temp.open  # re-open in r+ mode
       temp
-    rescue => e
+    rescue => err
       temp.close! if temp
-      raise e
+      raise err
     end
 
     # Like `dump`, but closes the IO stream after dumping.
