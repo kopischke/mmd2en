@@ -1,6 +1,6 @@
 # encoding: UTF-8
 require_relative 'test_helper'
-require 'semver'
+require 'semantic_version'
 
 class TestSemanticVersion < Minitest::Test
   def setup
