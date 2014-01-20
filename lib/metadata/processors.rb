@@ -69,11 +69,11 @@ module Metadata
     # @return [Array<(Hash, String)>] the collected metadata, indexed by the YAML frontmatter keys,
     #   and the content of `file`’ after stripping the YAML frontmatter.
     def call(file)
-      metadata = YAML.load_file(file.expanded_path) rescue false
       metadata = {} if metadata == false || metadata.is_a?(String) # no actual frontmatter found
+      path     = File.expand_path(file)
       unless metadata.empty?
         re = '^---[[:space:]]*$'
-        content = @sh.run_command('sed', '-En', "1,/#{re}/{ /#{re}/!d; }; p", file.expanded_path, :|, 'sed', '-E', "/#{re}/,/#{re}/d")
+        content = @sh.run_command('sed', '-En', "1,/#{re}/{ /#{re}/!d; }; p", path, :|, 'sed', '-E', "/#{re}/,/#{re}/d")
       end
       [metadata, content]
     end
@@ -85,11 +85,12 @@ module Metadata
     # @param (see Processor#call)
     # @return [Array<(Hash, String)>] an empty metadata Hash and the transformed content of `file`.
     def call(file)
+      path    = File.expand_path(file)
       content = @sh.run_command('sed', '-E', '1,/^[[:space:]]*$/{
         s/^@[[:space:]]+/Tags: /
         s/^=[[:space:]]+/Notebook: /
-      }', file.expanded_path)
-      @sh.ok? or fail "Unable to check '#{file.expanded_path}' for legacy front matter: `sed` exited with status #{@sh.exitstatus}."
+      }', path)
+      @sh.ok? or fail "Unable to check '#{path}' for legacy front matter: `sed` exited with status #{@sh.exitstatus}."
       [{}, content]
     end
   end
@@ -98,9 +99,10 @@ module Metadata
   class SpotlightPropertiesProcessor < AggregatingProcessor
     # @param keys [Hash] mapping of metadata key => Spotlight key(s) to pass to collector.
     def initialize(**keys)
+      path  = File.expand_path(file)
       super(**keys) do |file, spotlight_key|
-        out = @sh.run_command('mdls', '-raw', '-name', spotlight_key, file.expanded_path)
         @sh.ok? or fail "Unable to collect '#{spotlight_key}' data: `mdls` exited with status #{@sh.exitstatus}."
+        out = @sh.run_command('mdls', '-raw', '-name', spotlight_key, file.path)
         out = out.lines.map {|l| l.strip.gsub(/(^(\(null\)|\(|\)),?$|^"|",?$)/, '')[/^.+$/] }.compact
         out.count > 1 ? out : out.first
       end

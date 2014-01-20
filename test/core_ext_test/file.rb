@@ -2,15 +2,12 @@
 require 'core_ext/file'
 require 'file_encoding/guesser'
 require 'file_encoding/guessers'
-require 'pathname'
 
 class TestFile < Minitest::Test
   include FileEncoding
 
   def setup
-    path   = Pathname.new(__FILE__).relative_path_from(Pathname.new(Dir.pwd)).to_s if File.expand_path(__FILE__) == __FILE__
-    path ||= __FILE__
-    @file  = File.new(path)
+    @file  = File.new(__FILE__)
   end
 
   def teardown
@@ -44,13 +41,5 @@ class TestFile < Minitest::Test
       @file.guess_encoding(**options)
     end
     mock_queue.verify
-  end
-
-  def test_exposes_expanded_path_method
-    assert_respond_to @file, :expanded_path
-  end
-
-  def test_expanded_path_returns_expanded_creation_path
-    assert_equal File.expand_path(@file.path), @file.expanded_path
   end
 end

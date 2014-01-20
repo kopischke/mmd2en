@@ -27,12 +27,5 @@ module CoreExtensions
     def guess_encoding(*guessers, **guess_options)
       File.guess_encoding(self, *guessers, **guess_options)
     end
-
-    # Get the expanded form of the path used to create the file.
-    # @param dir_string [String] as in File.expand_path.
-    # @return [String] the path.
-    def expanded_path(dir_string = nil)
-      File.expand_path(self, dir_string)
-    end
   end
 end

@@ -76,8 +76,8 @@ class MultiMarkdownParser
   #   if the full list of keys contained in `file` cannot be retrieved.
   # @return [Hash] the collected metadata.
   def load_file_metadata(file, *fallback_keys)
-    path     = File.expand_path(file)
     metadata = {}
+    path = File.expand_path(file)
 
     keys = if @version >= BASELINE_VERSION
         # gather available metadata keys from file if '-m' option is supported
