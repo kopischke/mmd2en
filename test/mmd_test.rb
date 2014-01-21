@@ -101,11 +101,24 @@ class TestMultiMarkdownParser < Minitest::Test
     end
   end
 
+  def test_exposes_pathname_instance_methods
+    Pathname.instance_methods.each do |m| assert_respond_to @mmd, m end
+  end
+
+  def test_version_is_readonly
+    refute_respond_to @mmd, :version=
+  end
+
+  def test_version_returns_correct_semantic_version
+    assert_instance_of SemanticVersion, @mmd.version
+    assert_equal  SemanticVersion.new(@best.version), @mmd.version.to_s
+  end
+
   def test_new_completes_using_best_binary_found
     @runner.expect_shell_query_returning(*@bins)
     @runner.expect_version_query_for(*@exec)
     Stubs.with_runner(@runner) do
-      assert_equal @best.path, MultiMarkdownParser.new.bin
+      assert_equal @best.path, MultiMarkdownParser.new.to_path
     end
     @runner.verify
   end
@@ -114,7 +127,7 @@ class TestMultiMarkdownParser < Minitest::Test
     @runner.expect_shell_query_returning(@dud, @best)
     @runner.expect_version_query_for(@best)
     Stubs.with_runner(@runner) do
-      assert_equal @best.path, MultiMarkdownParser.new.bin
+      assert_equal @best.path, MultiMarkdownParser.new.to_path
     end
     @runner.verify
   end
@@ -125,36 +138,6 @@ class TestMultiMarkdownParser < Minitest::Test
       assert_raises(RuntimeError) { MultiMarkdownParser.new }
     end
     @runner.verify
-  end
-
-  def test_bin_as_string_is_path
-    assert_equal @mmd.bin, @mmd.to_path
-    assert_equal @mmd.bin, @mmd.to_s
-    assert_equal @mmd.bin, @mmd.to_str
-  end
-
-  def test_exposes_bin_pathname_properties
-    [
-      :expand_path,
-      :realpath,
-      :realdirpath,
-      :dirname,
-      :basename,
-      :parent,
-      :size,
-      :stat,
-      :atime,
-      :ctime,
-      :owned?,
-      :grpowned?,
-      :symlink?,
-      :readlink
-    ].each do |method| assert_respond_to @mmd, method end
-  end
-
-  def test_version_returns_correct_semantic_version
-    assert_instance_of SemanticVersion, @mmd.version
-    assert_equal  SemanticVersion.new(@best.version), @mmd.version.to_s
   end
 
   def test_load_file_metadata_queries_all_keys_if_m_supported
