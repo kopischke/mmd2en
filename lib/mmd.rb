@@ -20,9 +20,9 @@ class MultiMarkdownParser < DelegateClass(Pathname)
   def initialize
     @sh = ShellRunner.new
 
-    # get all `multimarkdown` binaries in PATH and env
+    # get all unique `multimarkdown` binaries in PATH and env
     found = @sh.run_command('bash', '-lc', 'echo $MULTIMARKDOWN; which -a multimarkdown')
-    found = found.split($/).reject {|l| l.empty? }
+    found = found.split($/).reject {|l| l.empty? }.uniq
     fail 'No MultiMarkdown processor found: install MMD into your PATH, or export $MULTIMARKDOWN to point to it.' if found.empty?
 
     # filter down to executable binaries only
