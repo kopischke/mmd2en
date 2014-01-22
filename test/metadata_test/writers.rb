@@ -221,7 +221,7 @@ class TestWriter < Minitest::Test
     end
   end
 
-  def test_warns_and_returns_input_note_on_applescript_error
+  def test_write_raises_runtime_error_on_applescript_error
     new_note_path = "Foo bar\n1234505685"
     input         = 'Whatever'
     err_msg       = /`osascript` command exited with code: \[1\]./
@@ -229,19 +229,15 @@ class TestWriter < Minitest::Test
     @title_writer.expect_write(@note, input, new_note_path, false)
     @title_writer.runner.expect :exitstatus, [1]
 
-    assert_output('', err_msg) { assert_equal @note, @title_writer.write(@note, input) }
+    assert_raises(RuntimeError) { assert_equal @note.to_s, @title_writer.write(@note, input).to_s }
     @title_writer.runner.verify
   end
 
-  def test_warns_and_returns_input_note_on_validation_returning_nil
-    # :date normalizer returns nil
-    input   = 89
-    err_msg = /value '#{input}' is empty after filtering./
-    assert_output('', err_msg) { assert_equal @note, @date_writer.write(@note, input) }
-
-    # @tags_writer Sieve chain returns nil
-    input   = '   '
-    err_msg = /value '#{input}' is empty after filtering./
-    assert_output('', err_msg) { assert_equal @note, @tags_writer.write(@note, input) }
+  def test_write_raises_runtime_error_on_validation_failing
+    straining_writers = @test_data.keys.reject {|w| w.sieve.nil? }
+    skip 'No writers with sieves to test.' if straining_writers.empty?
+    straining_writers.each do |writer|
+      assert_raises(RuntimeError)  { writer.write(@note, '') }
+    end
   end
 end

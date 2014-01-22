@@ -76,8 +76,7 @@ module Metadata
     #
     # @param note [Metadata::Helpers::NotePath] the note whose metadata is to be written.
     # @param value [Object] the value to set `note`’s {#key} to.
-    # @return [Metadata::Helpers::NotePath] if no error occurs, the created or updated note.
-    # @return [Metadata::Helpers::NotePath] if a Runtime error occurs, the original note.
+    # @return [Metadata::Helpers::NotePath] the created or updated note path.
     def write(note, value = nil)
       input = @normalizers.fetch(@type, @normalizers[:other]).call(value)
       input = @sieve.strain(input) if @sieve
@@ -90,15 +89,9 @@ module Metadata
         *@writers.fetch(@key, @writers['default']).call(input),
         %Q{end tell}
       ]
-      output = @runner.run_script(*script, get_note_path_for: target)
-      @runner.ok? or fail "`osascript` command exited with code: #{@runner.exitstatus}."
-
-    rescue RuntimeError => e
-      warn "Unable to set #{@key} for note ID '#{note.id}' of notebook '#{note.notebook}' to '#{value}': " << String(e)
-      return note # fallback input for next writer in chain
-
-    else
-      return NotePath.new(output)
+      out = @runner.run_script(*script, get_note_path_for: target)
+      fail "`osascript` command exited with code: #{@runner.exitstatus}." unless @runner.ok?
+      NotePath.new(out)
     end
 
     private
