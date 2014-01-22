@@ -9,7 +9,6 @@ require 'shellrun'
 class MultiMarkdownParser < DelegateClass(Pathname)
   # Minimum `multimarkdown` version for metadata collection support.
   MINIMUM_VERSION  = '4.0.0'
-
   # Optimal `multimarkdown` version for best metadata collection support.
   BASELINE_VERSION = '4.3.0'
 
