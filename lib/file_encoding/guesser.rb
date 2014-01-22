@@ -1,6 +1,5 @@
 # encoding: UTF-8
 require 'file_encoding/byte_set'
-require 'semver'
 require 'shellrun'
 
 # Encoding guesser foundation library.
@@ -9,53 +8,97 @@ require 'shellrun'
 module FileEncoding
   # Guess PORO, internal usage only.
   Guess = Struct.new(:encoding, :confidence)
-  private_constant :Guess
 
-  # @abstract
   # Guesser base class.
+  #
+  # Doesn’t on anything on its own (as {#available?} always returns `false`):
+  # its constructor and guess methods are wrappers for its subclasses.
   class Guesser
+    # Provides guesser block initialization and guards against missing blocks.
+    # @note all instance variables are frozen to defend against modification
+    #   through the guesser block (which runs in instance context).
+    # @param block [Proc] the guesser block (will be run in instance context).
+    # @raise [ArgumentError] if `block` is nil.
+    def initialize(&block)
+      @block = block or fail ArgumentError, "#{self.class} initialized without a guesser block!"
+      instance_variables.each do |ivar| ivar.freeze end # defend against in-block manipulations.
+    end
+
     # Check if #guess can return a result.
     # @return false.
     def available?
       false
     end
 
-    # Guess a file’s encoding.
-    # @param file [File, String] the file whose encoding should be guessed.
-    # @return nil.
-    def guess(file)
-      validate_result(nil)
-    end
-
-    private
-    # Make sure either a Guess object is returned or nil.
-    def validate_result(guess)
-      guess if guess.is_a?(Guess)
+    # Provides conditional block evaluation and return value validation.
+    # @param input [Object] the object to pass to the guesser block.
+    # @return [FileEncoding::Guess, nil] if the return value of the guesser block is valid.
+    # @raise [ArgumentError] if `@block` returns anything but nil or a {FileEncoding::Guess} object.
+    # @raise [RuntimeError] if `@block` tries to modify instance variables.
+    def guess(input)
+      guess = available? ? instance_exec(input, &@block) : nil
+      fail TypeError, "Invalid object type for block return: #{guess.class}!" unless guess.nil? || guess.is_a?(Guess)
+      guess
     end
   end
 
   # Guess encoding using a Ruby test block.
   class RubyGuesser < Guesser
-    # @param minimum_version [String, Float, Integer, SemanticVersion]
-    #   minimum Ruby version for the guesser.
-    # @param test [Proc] test block to run on the file.
-    def initialize(minimum_version, &test)
-      @version = SemanticVersion.new(minimum_version)
-      @test    = test || ->(_) { nil }
+    # @return [Array<Hash, #call, Boolean>] the requirements to fulfill.
+    attr_reader :requirements
+
+    # @param requirements [Array<Hash, #call, Boolean>] the requirements to fulfill.
+    #   Requirements interpretation depends on their type:
+    #   * a Hash: if either the gem named like the Hash key, of Ruby itself if the key is 'ruby',
+    #     are available (in the case of gems), meet the requirement(s) listed
+    #     in the keyed Hash value (see Gem::Requirement for the format) and can be activated.
+    #   * an object responding to `call`: the return value of calling the object.
+    #   * a Boolean, or nil: the value.
+    # @param (see Guesser#initialize)
+    def initialize(*requirements, &block)
+      @requirements = requirements
+      super(&block)
     end
 
-    # @return [true] if the current Ruby version is greater or equal the minimum version.
-    # @return [false] if the current Ruby version is less than the minimum version.
+    # {include:Guesser#available?}
+    # @return [Boolean] are all requirements for the test block met?
+    # @raise [RuntimeError] if an invalid requirement is met.
     def available?
-      @version <= RUBY_VERSION
+      @requirements.all? {|req|
+        case
+        when req.is_a?(Hash)
+          req.all? {|target, requires|
+            target   = String(target)
+            requires = Array(requires)
+
+            if target == 'ruby' # test Ruby version
+              ruby_version = Gem::Version.new(RUBY_VERSION)
+              requires.all? {|r| Gem::Requirement.create(r).satisfied_by?(ruby_version) }
+
+            else # check for availability of matching gems
+              specs    = Gem::Specification.find_all_by_name(target, *requires)
+              return false if specs.empty?
+              versions = specs.map(&:version)
+              conflict = Gem::Specification.find_all_by_name(target).reject {|spec|
+                  versions.include?(spec.version)
+                }.find {|spec|
+                  spec.activated?
+                }
+              specs.count > 0 && conflict.nil?
+            end
+          }
+        when req.respond_to?(:call)           then req.call
+        when [true, false, nil].include?(req) then req
+        else fail RuntimeError, "'#{req}' is not a valid requirement!"
+        end
+      }
     end
 
-    # Call the defined test block on `file`.
+    # Call the guesser block on `file`.
     # @param (see Guesser#guess)
-    # @return [FileEncoding::Guess] if the test block returned a guess.
-    # @return [nil] if the test block returned anything but a guess.
+    # @return (see Guesser#guess)
     def guess(file)
-      validate_result(instance_exec(file, &@test))
+      super(file)
     end
   end
 
@@ -63,68 +106,63 @@ module FileEncoding
   class ShellGuesser < Guesser
     # @return [String] the shell tool to invoke when guessing.
     attr_reader :tool
-
     # @return [Array] the arguments to pass to #tool.
     attr_reader :args
-
     # @return [ShellRunner] the ShellRunner instance used for shell invocations.
     attr_reader :sh
 
     # @param tool [String] the shell tool to invoke when guessing.
     # @param tool_args [Array<String>] the arguments to pass to #tool.
-    # @param process [Proc] the block to call on the output of the shell invocation.
-    def initialize(tool, *tool_args, &process)
+    # @param (see Guesser#initialize)
+    def initialize(tool, *tool_args, &block)
       @sh      = ShellRunner.new
       @tool    = tool
       @args    = tool_args
-      @process = process || ->(_) { nil }
+      @process = block
+      block    = Proc.new {|path|
+          output = @sh.run_command(@tool, *@args, path, :'2>/dev/null')
+          instance_exec(output, &@process) if @sh.ok?
+        } if @process
+      super(&block)
     end
 
-    # @return [true] if `tool` is either found by absolute path, or in the shell $PATH.
-    # @return [false] if `tool` is neither found by absolute path, nor in the shell $PATH.
+    # {include:Guesser#available?}
+    # @return [Boolean] is `tool` is either found by absolute path, or in the shell $PATH?
     def available?
       File.file?(@tool) || !@sh.run_command('which', @tool).empty?
     end
 
-    # Invoke #tool with #args on `file`, applying the processor block if given.
+    # process the output of calling #tool with #args on the path of `file`.
     # @param (see Guesser#guess)
-    # @return [FileEncoding::Guess] if the test block returned a guess.
-    # @return [nil] if the test block returned anything but a guess.
+    # @return (see Guesser#guess)
     def guess(file)
-      path   = File.expand_path(file.is_a?(File) ? file.path : file)
-      output = @sh.run_command(@tool, *@args, path.shellescape, :'2>/dev/null')
-      validate_result(instance_exec(output, &@process)) if @sh.ok?
+      super(File.realpath(file))
     end
   end
 
   # Guess encoding by analyzing the byte structure.
   class ByteGuesser < Guesser
+    # @return [Integer] the size in bytes of the ByteSet created.
     attr_reader :chunk_size
 
-    # @param chunk_size [Integer] the chunk size of the ByteSet created.
-    # @param test [Proc] the test block to call on the created ByteSet.
-    def initialize(chunk_size = nil, &test)
-      @chunk_size = chunk_size
-      @test       = test || ->(_) { nil }
+    # @param chunk_size [Integer] the size in bytes of the ByteSet to create.
+    # @param (see Guesser#initialize)
+    def initialize(chunk_size = nil, &block)
+      @chunk_size = Integer(chunk_size) if chunk_size
+      super(&block)
     end
 
-    # @return [true] if File.getbyte exists.
-    # @return [false] if File.getbyte does not exist.
+    # {include:Guesser#available?}
+    # @return [Boolean] does File respond to :getbyte?
     def available?
       File.instance_methods.include?(:getbyte)
     end
 
     # Invoke the test block on a ByteSet of `file`.
     # @param file (see Guesser#guess)
-    # @param byte_set [FileEncoding::ByteSet] a cached ByteSet for `file` (optional).
-    # @note the `byte_set` argument  will be ignored if its file path or chunk size do not match `file` and #chunk_size.
-    # @return [FileEncoding::Guess] if the test block returned a guess.
-    # @return [nil] if the test block returned anything but a guess.
-    def guess(file, byte_set = nil)
-      if byte_set.nil? || byte_set.chunk_size != @chunk_size || File.expand_path(byte_set.file) != File.expand_path(file)
-        byte_set = ByteSet.new(file, @chunk_size)
-      end
-      validate_result(instance_exec(byte_set, &@test))
+    # @return (see Guesser#guess)
+    def guess(file)
+      super(ByteSet.new(file, @chunk_size))
     end
   end
 end

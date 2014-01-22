@@ -8,7 +8,7 @@ module FileEncoding
     # @version {FileEncoding::VERSION}
     module Cheap
       # Reliable detector for UTF-(16|32)(BE|LE) on Ruby 1.9+.
-      CORE_BOM = RubyGuesser.new('1.9') do |fn|
+      CORE_BOM = RubyGuesser.new({ruby: '>= 1.9'}) do |fn|
         File.open(fn, 'r:BOM|UTF-8:UTF-8') do |f|
           Guess.new(f.external_encoding, 1.0) if f.pos > 0 # we have skipped a BOM
         end
