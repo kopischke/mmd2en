@@ -17,12 +17,12 @@ module FileEncoding
     # @param file [File, String] the file or pathname to a file queried.
     # @param chunk_size [Integer] the number of bytes to query from `file`.
     def initialize(file, chunk_size = nil)
-      @count_of   = Hash.new(0)
-      @count      = 0
-      @file       = File.open(file) {|fd|
+      @tally = Hash.new(0)
+      @count = 0
+      @file  = File.open(file) {|fd|
         while (byte = fd.getbyte) && (chunk_size.nil? || @count < chunk_size)
-          @count_of[byte] += 1
-          @count          += 1
+          @tally[byte] += 1
+          @count       += 1
         end
         fd
       }
@@ -59,7 +59,7 @@ module FileEncoding
     # @return [Integer] the sum count of all `bytes` present in the file.
     # @note all arguments in `bytes` are mapped to a flat Array.
     def count_of(*bytes)
-      bytes.flat_map {|e| Array(e) }.reduce(0) {|count, byte| count + @count_of[byte] }
+      bytes.flat_map {|e| Array(e) }.reduce(0) {|count, byte| count + @tally[byte] }
     end
 
     # The ratio of queried bytes to the total byte count of the file.
