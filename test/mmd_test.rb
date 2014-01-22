@@ -110,8 +110,8 @@ class TestMultiMarkdownParser < Minitest::Test
   end
 
   def test_version_returns_correct_semantic_version
-    assert_instance_of SemanticVersion, @mmd.version
-    assert_equal  SemanticVersion.new(@best.version), @mmd.version.to_s
+    assert_instance_of String, @mmd.version
+    assert_equal       @best.version, @mmd.version
   end
 
   def test_new_completes_using_best_binary_found

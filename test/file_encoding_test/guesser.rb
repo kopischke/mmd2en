@@ -1,6 +1,5 @@
 # encoding: UTF-8
 require 'file_encoding/guesser'
-require 'semantic_version'
 
 class TestGuess < Minitest::Test
   include FileEncoding
@@ -53,8 +52,8 @@ class TestRubyGuesser < Minitest::Test
   end
 
   def test_available_on_correct_ruby_version
-    this_ruby = SemanticVersion.new(RUBY_VERSION)
-    next_ruby = this_ruby.bump
+    this_ruby = RUBY_VERSION
+    next_ruby = this_ruby.split('.').map {|e| Integer(e) + 1 }.join('.')
     assert RubyGuesser.new({ruby: ">= #{this_ruby}"}, &@block).available?
     refute RubyGuesser.new({ruby: ">= #{next_ruby}"}, &@block).available?
   end

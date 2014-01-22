@@ -1,7 +1,6 @@
 # encoding: UTF-8
 require 'delegate'
 require 'pathname'
-require 'semantic_version'
 require 'shellrun'
 
 # Wrapper for the `multimarkdown` binary: get best version, get metadata, convert files.
@@ -14,7 +13,7 @@ class MultiMarkdownParser < DelegateClass(Pathname)
   # Optimal `multimarkdown` version for best metadata collection support.
   BASELINE_VERSION = '4.3.0'
 
-  # @return [SemanticVersion] the version of the used binary.
+  # @return [String] the version of the used binary.
   attr_reader :version
 
   def initialize
@@ -30,18 +29,19 @@ class MultiMarkdownParser < DelegateClass(Pathname)
     fail "No executable MultiMarkdown processor found among:#{list_join(*found)}" if executable.empty?
 
     # filter down to binaries with version >= MINIMUM_VERSION
+    minimally  = Gem::Requirement.create(">= #{MINIMUM_VERSION}")
     compatible = executable.each.with_object({}) {|bin, collect|
       versinfo = @sh.run_command(bin, '-v').match(/MultiMarkdown version ([^[:space:]]+)/i)
       if versinfo
-        version      = SemanticVersion.new(versinfo[1])
-        collect[bin] = version if version >= MINIMUM_VERSION
+        version      = Gem::Version.new(versinfo[1])
+        collect[bin] = version if minimally.satisfied_by?(version)
       end
     }
 
     # get binary with highest compatible version
     best_bin, best_version = compatible.max_by {|bin, version| version }
     best_bin or fail "No MultiMarkdown processor version #{MINIMUM_VERSION} or better found among:#{list.join(*found)}"
-    @version = best_version
+    @version = best_version.version
     @bin     = Pathname.new(best_bin)
     super(@bin)
   end
@@ -54,7 +54,7 @@ class MultiMarkdownParser < DelegateClass(Pathname)
   def load_file_metadata(file, *fallback_keys)
     path = File.expand_path(file)
 
-    keys = if @version >= BASELINE_VERSION
+    keys = if Gem::Requirement.create(">= #{BASELINE_VERSION}").satisfied_by?(Gem::Version.new(@version))
         # gather available metadata keys from file if '-m' option is supported
         @sh.run_command(@bin.to_path, '-m', path).split($/)
       elsif fallback_keys.count > 0
