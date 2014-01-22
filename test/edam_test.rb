@@ -1,5 +1,6 @@
 # encoding: UTF-8
 require_relative 'test_helper'
+require 'core_ext/string'
 require 'edam'
 
 class TestEDAMStringSieve < Minitest::Test
@@ -36,8 +37,8 @@ class TestEDAMStringSieve < Minitest::Test
     ellipsis = " (#{input[0..rand(3)]})"
     sieve    = StringSieve.new(max_chars: @max_length, ellipsis: ellipsis)
     assert_equal input, @default.strain(input)
-    assert_equal input[0...@max_length-@ellipsis.length] << @ellipsis, @custom.strain(input)
-    assert_equal input[0...@max_length-ellipsis.length] << ellipsis, sieve.strain(input)
+    assert_equal input.truncate(@max_length, @ellipsis), @custom.strain(input)
+    assert_equal input.truncate(@max_length,  ellipsis),   sieve.strain(input)
   end
 
   def test_strain_rejects_strings_shorter_than_min_chars

@@ -1,4 +1,5 @@
 # encoding: UTF-8
+require 'core_ext/string'
 
 # Quick and dirty module to group Evernote data format restraints.
 # @see http://dev.evernote.com/doc/reference/Limits.html Evernote Developer Documentation.
@@ -55,7 +56,7 @@ module EDAM
       max_len = @max_chars || string.length
       string.strip!
       string.gsub!(/[#{ALWAYS_STRIP.join('')}#{@also_strip}]/, '')
-      string = string[0...max_len-@ellipsis.length] << @ellipsis if string.length > max_len
+      string.truncate!(@max_chars, @ellipsis) if @max_chars
       string if string.length >= @min_chars
     end
   end
