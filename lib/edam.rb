@@ -53,9 +53,7 @@ module EDAM
     # @param string [String] the String input to strain.
     # @return [String, nil] the sanitized String, or nil if validation fails.
     def strain(string)
-      max_len = @max_chars || string.length
-      string.strip!
-      string.gsub!(/[#{ALWAYS_STRIP.join('')}#{@also_strip}]/, '')
+      string = string.strip.gsub(/[#{ALWAYS_STRIP.join('')}#{@also_strip}]/, '')
       string.truncate!(@max_chars, @ellipsis) if @max_chars
       string if string.length >= @min_chars
     end
