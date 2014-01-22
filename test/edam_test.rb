@@ -76,7 +76,7 @@ class TestEDAMArraySieve < Minitest::Test
     assert_raises(ArgumentError) { @default.item_sieve = 'Foobar' }
   end
 
-  def test_strain_truncates_list_input_with_element_count_above_max_items
+  def test_strain_truncates_lists_with_element_count_above_max_items
     items = (0...@max_items).map { @test_data.sample }
     assert_equal items.count, @default.strain(items).count
     assert_equal @max_items,  @custom.strain(items).count
