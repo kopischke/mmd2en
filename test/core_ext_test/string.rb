@@ -4,7 +4,7 @@ require 'core_ext/string'
 class TestString < Minitest::Test
   def setup
     @mark  = '.,;.!?'.chars.sample
-    @base  = String.new
+    @base  = "".tap {|str| rand(6..24).times do str << (('A'...'z').to_a | [' ']).sample end }
     @ref   = @base.dup
     @punct = "#{@base}#{@mark}"
   end
@@ -27,8 +27,9 @@ class TestString < Minitest::Test
   end
 
   def test_punct_defaults_to_period
-    assert_equal @base << '.', @base.punct
-    assert_equal @base << '.', @base.punct!
+    assert_equal "#{@ref}.", @base.punct
+    assert_equal "#{@ref}.", @base.punct!
+  end
 
   def test_exposes_truncate_methods
     assert_respond_to @base, :truncate
