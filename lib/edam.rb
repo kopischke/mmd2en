@@ -30,13 +30,10 @@ module EDAM
   class StringSieve < Sieve
     # @return [Integer] the minimum char length of the String.
     attr_reader :min_chars
-
     # @return [Integer] the maximum char length of the String.
     attr_reader :max_chars
-
     # @return [String] invalid characters other than those in {ALWAYS_STRIP}.
     attr_reader :also_strip
-
     # @return [String] the ellipsis character(s) to use when truncating the input.
     attr_reader :ellipsis
 
@@ -67,20 +64,25 @@ module EDAM
   class ArraySieve < Sieve
     # @return [Integer] the minimum number of items in the Array.
     attr_reader :min_items
-
     # @return [Integer] the maximum number of items in the Array.
     attr_reader :max_items
-
     # @return [EDAM::Sieve] the sieve to apply to the elements of the Array.
     attr_reader :item_sieve
 
     # @param min_items [Integer] the minimum number of items in the Array.
     # @param max_items [Integer] the maximum number of items in the Array.
-    # @param item_sieve  [EDAM::Sieve] the sieve to apply to the elements of the Array.
-    def initialize(min_items: 1, max_items: nil, item_sieve: nil)
+    def initialize(min_items: 1, max_items: nil)
       @min_items  = min_items
       @max_items  = max_items
-      @item_sieve = item_sieve
+    end
+
+    # @param sieve [EDAM::Sieve] the sieve to use on the list items.
+    # @return [nil]
+    # @raise [ArgumentError] if sieve is not a {EDAM::Sieve} object.
+    def item_sieve=(sieve)
+      fail ArgumentError, "Expected EDAM::Sieve, got #{sieve.class}!" unless sieve.is_a?(Sieve)
+      @item_sieve = sieve
+      @item_sieve.freeze
     end
 
     # Sanitize and validate Array input.
