@@ -41,7 +41,7 @@ module FileEncoding
         test_sets = Hash[test_data.map {|k,v| [Encoding.find(k), v] }]
 
         thresholds = (0.0004..0.1) # significant ratio to immediate accept ratio
-        confidence =   (0.15..0.5) # confidence levels matching ratio levels
+        confidence =    (0.2..0.5) # confidence levels matching ratio levels
 
         ratios = []
         tested = test_sets.keys.take_while {|encoding|
