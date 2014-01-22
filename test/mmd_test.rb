@@ -105,7 +105,8 @@ class TestMultiMarkdownParser < Minitest::Test
     Pathname.instance_methods.each do |m| assert_respond_to @mmd, m end
   end
 
-  def test_version_is_readonly
+  def test_exposes_version_reader
+    assert_respond_to @mmd, :version
     refute_respond_to @mmd, :version=
   end
 
