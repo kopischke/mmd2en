@@ -11,19 +11,17 @@ module Metadata
   # @version {Metadata::VERSION}
   class Writer
     include AppleScripter
+    include EDAM
     include Metadata::Helpers
 
     # @return [String] the metadata key name.
     attr_reader :key
-
     # @return [Symbol] the data type of the metadata associated with {#key}.
     #   One of: :text, :date, :file, :list.
     attr_reader :type
-
     # @return [Symbol] the data type of the elements of a *:list* metadata key.
     #   One of: :text, :date, :file.
     attr_reader :item_type
-
     # @return [EDAM::Sieve] the EDAM sanitizer and validator to use.
     attr_reader :sieve
 
@@ -32,18 +30,16 @@ module Metadata
     #   One of: :text, :date, :file, :list.
     # @param item_type [Symbol] the data type of the elements of a *:list* `key`.
     #   One of: :text, :date, :file.
-    # @param sieve [EDAM::Sieve] the EDAM sanitizer and validator to use.
-    def initialize(key, type: :text, item_type: :text, sieve: nil)
+    def initialize(key, type: :text, item_type: :text)
       @key       = key.downcase.strip
       @type      = type.downcase.to_sym
       @item_type = item_type.downcase.to_sym if type == :list
-      @sieve     = sieve
       @runner    = EvernoteRunner.new
 
       # lambdas used to normalize input data to expected type
       @normalizers = {
         list:  ->(input) { # split textual input on newlines and eventual StringSieve forbidden chars
-          split = @sieve && @sieve.item_sieve.is_a?(EDAM::StringSieve) ? /[#{@sieve.item_sieve.also_strip}\n]/ : $/
+          split = @sieve && @sieve.item_sieve.is_a?(StringSieve) ? /[#{@sieve.item_sieve.also_strip}\n]/ : $/
           list  = input.is_a?(String) ? input.split(split) : Array(input)
           list.map {|e| @normalizers[@item_type].call(e) }.compact.uniq
         },
@@ -60,6 +56,15 @@ module Metadata
         'notebook'    => ->(book)  { acquire('theBook', 'notebook', book) << %Q{move it to first item of theBook} },
         'tags'        => ->(tags)  { acquire('theTags', 'tag', *tags)     << %Q{assign theTags to it} }
       }
+    end
+
+    # @param sieve [EDAM::Sieve] the sieve to use.
+    # @return [nil]
+    # @raise [ArgumentError] if sieve is not a {EDAM::Sieve} object.
+    def sieve=(sieve)
+      fail ArgumentError, "Expected EDAM::Sieve, got #{sieve.class}!" unless sieve.is_a?(Sieve)
+      @sieve = sieve
+      @sieve.freeze
     end
 
     # Write an Evernote note’s metadata.

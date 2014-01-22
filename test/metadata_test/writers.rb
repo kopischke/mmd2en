@@ -6,9 +6,10 @@ require 'metadata/writers'
 require 'tempfile'
 require 'uri'
 
-class TestWriter < Minitest::Test
+module TestingWriter
   class Writer < Metadata::Writer
     attr_reader :normalizers, :writers, :runner
+
     def initialize(*args)
       super
       @runner = Minitest::Mock.new
@@ -31,25 +32,34 @@ class TestWriter < Minitest::Test
       @runner.expect :ok?, ok
     end
   end
+end
+
+class TestWriter < Minitest::Test
+  include EDAM
+  include TestingWriter
 
   def setup
-    @title_sieve  = EDAM::StringSieve.new(max_chars: EDAM::NOTE_TITLE_LEN_MAX)
-    @title_writer = Writer.new('title', sieve: @title_sieve )
+    @title_sieve  = StringSieve.new(max_chars: NOTE_TITLE_LEN_MAX)
+    @title_writer = Writer.new('title')
+    @title_writer.sieve = @title_sieve
 
-    @book_sieve   = EDAM::StringSieve.new(max_chars: EDAM::NOTEBOOK_NAME_LEN_MAX)
-    @book_writer  = Writer.new('notebook', sieve: @book_sieve)
+    @book_sieve   = StringSieve.new(max_chars: NOTEBOOK_NAME_LEN_MAX)
+    @book_writer  = Writer.new('notebook')
+    @book_writer.sieve = @book_sieve
 
-    @tag_sieve    = EDAM::StringSieve.new(max_chars: EDAM::TAG_NAME_LEN_MAX, also_strip: ',')
-    @tags_writer  = Writer.new('tags', type: :list, sieve: @tags_sieve)
-    @tags_sieve   = EDAM::ArraySieve.new(max_items: EDAM::NOTE_TAGS_MAX)
+    @tag_sieve    = StringSieve.new(max_chars: TAG_NAME_LEN_MAX, also_strip: ',')
+    @tags_sieve   = ArraySieve.new(max_items: NOTE_TAGS_MAX)
     @tags_sieve.item_sieve =  @tag_sieve
+    @tags_writer  = Writer.new('tags', type: :list)
+    @tags_writer.sieve = @tags_sieve
+
+    @files_sieve  = ArraySieve.new(max_items: NOTE_RESOURCES_MAX)
+    @files_writer = Writer.new('attachments', type: :list, item_type: :file)
+    @files_writer.sieve = @files_sieve
 
     @url_writer   = Writer.new('source url')
     @date_writer  = Writer.new('subject date',  type: :date)
     @due_writer   = Writer.new('reminder time', type: :date)
-
-    @files_sieve  = EDAM::ArraySieve.new(max_items: EDAM::NOTE_RESOURCES_MAX)
-    @files_writer = Writer.new('attachments', type: :list, item_type: :file, sieve: @files_sieve)
 
     @notebook     = 'Default Notebook'
     @note_id      = 'x-cored-id//:some-stuff/124968686'
@@ -90,7 +100,7 @@ class TestWriter < Minitest::Test
     @test_url  = 'http://manual.macromates.com/'
 
     @long_str  = ''
-    until @long_str.length > EDAM::NOTE_TITLE_LEN_MAX do @long_str << ' ' << @test_str end
+    until @long_str.length > NOTE_TITLE_LEN_MAX do @long_str << ' ' << @test_str end
 
     @not_a_file  = '/no/such/file'
     @not_a_file << (a..z).to_a.sample while File.exist?(@not_a_file)
@@ -106,29 +116,41 @@ class TestWriter < Minitest::Test
     }
   end
 
-  def test_exposes_readable_properties
-    writer = Metadata::Writer.new('foo')
-    [:key, :type, :item_type, :sieve].each do |m| assert_respond_to writer, m end
+  def test_exposes_readonly_properties
+    writer = Metadata::Writer.new('test')
+    [:key, :type, :item_type].each do |m|
+      assert_respond_to writer, m
+      refute_respond_to writer, "#{m}="
+    end
   end
 
-  def test_normalizers_handle_scalar_input
-    writer = Writer.new('test')
+  def test_exposes_sieve_accessor
+    writer = Metadata::Writer.new('test')
+    assert_respond_to writer, :sieve
+    assert_respond_to writer, :sieve=
 
-    # :text
+    writer.sieve = @files_sieve
+    assert_equal @files_sieve, writer.sieve
+    assert writer.sieve.frozen?
+    assert_raises(ArgumentError) { writer.sieve = 'Foobar' }
+  end
+
+  def test_normalizers_handle_text_input
+    writer = Writer.new('text')
     [URI(@test_url), @test_str.to_sym, @test_date, rand(500)].each do |input|
       assert_equal String(input), writer.normalizers[:text].call(input)
     end
+  end
 
-    # :date
+  def test_normalizers_handle_date_input
+    writer = Writer.new('date')
     [@test_date, String(@test_date), @test_date.to_datetime].each do |input|
       assert_equal @test_date, writer.normalizers[:date].call(input)
     end
+  end
 
-    # :file
-    assert_equal @valid_files, @input_files.map {|f| writer.normalizers[:file].call(f) }.compact
-
-    # :other => exception
-    assert_raises(RuntimeError) { writer.normalizers[:other].call(@test_str) }
+  def test_normalizers_handle_file_input
+    assert_equal @valid_files, @input_files.map {|f| Writer.new('file').normalizers[:file].call(f) }.compact
   end
 
   def test_normalizers_handle_list_input
@@ -147,7 +169,11 @@ class TestWriter < Minitest::Test
     assert_equal ['foo', 'bar', ' baz'], @tags_writer.normalizers[:list].call("foo#{$/}bar, baz")
   end
 
-  def test_applies_correct_normalizer_and_eventual_sieve
+  def test_normalizers_raise_runtime_error_on_invalid_type
+    assert_raises(RuntimeError) { Writer.new('boom').normalizers[:other].call(@test_str) }
+  end
+
+  def test_write_applies_correct_normalizer_and_eventual_sieve
     @test_data.each do |writer, content|
       # normalization
       input = writer.normalizers[writer.type].call(content[0])
@@ -161,7 +187,7 @@ class TestWriter < Minitest::Test
     end
   end
 
-  def test_writes_note_properties
+  def test_write_writes_note_properties
     @test_data.each do |writer, content|
       raw  = content[0]
       sane = writer.normalizers[writer.type].call(raw)
@@ -176,7 +202,7 @@ class TestWriter < Minitest::Test
     end
   end
 
-  def test_assigns_evernote_objects
+  def test_write_assigns_evernote_objects
     [ {key: 'notebook', object: 'notebook', writer: @book_writer, content: 'A different notebook',
        key: 'tags',     object: 'tag',      writer: @tags_writer, content: ['foo', 'bar', 'baz']}
     ].each do |item|
