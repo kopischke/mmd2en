@@ -17,7 +17,7 @@ GEM
     powerbar (1.0.11)
       ansi (~> 1.4.0)
       hashie (>= 1.1.0)
-    rake (10.1.0)
+    rake (12.3.3)
     version (1.0.0)
     yard (0.8.7.3)
 
@@ -31,6 +31,6 @@ DEPENDENCIES
   minitest-reporters (~> 1.0.0)
   minitest-stub-const (~> 0.1)
   mustache (~> 0.99.5)
-  rake (~> 10.0)
+  rake (~> 12.3)
   version (~> 1.0)
   yard (~> 0.8)
