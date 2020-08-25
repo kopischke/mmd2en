@@ -19,7 +19,7 @@ GEM
       hashie (>= 1.1.0)
     rake (12.3.3)
     version (1.0.0)
-    yard (0.8.7.3)
+    yard (0.9.20)
 
 PLATFORMS
   ruby
@@ -33,4 +33,4 @@ DEPENDENCIES
   mustache (~> 0.99.5)
   rake (~> 12.3)
   version (~> 1.0)
-  yard (~> 0.8)
+  yard (~> 0.9)
